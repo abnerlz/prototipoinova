@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SensoresIndexRouteImport } from './routes/sensores.index'
 import { Route as MunicipiosIndexRouteImport } from './routes/municipios.index'
 import { Route as BairrosIndexRouteImport } from './routes/bairros.index'
+import { Route as SensoresSensorIdRouteImport } from './routes/sensores.$sensorId'
 import { Route as MunicipiosMunicipalityIdRouteImport } from './routes/municipios.$municipalityId'
 import { Route as BairrosNeighborhoodIdRouteImport } from './routes/bairros.$neighborhoodId'
 
@@ -42,6 +43,11 @@ const BairrosIndexRoute = BairrosIndexRouteImport.update({
   path: '/bairros/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SensoresSensorIdRoute = SensoresSensorIdRouteImport.update({
+  id: '/sensores/$sensorId',
+  path: '/sensores/$sensorId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MunicipiosMunicipalityIdRoute =
   MunicipiosMunicipalityIdRouteImport.update({
     id: '/municipios/$municipalityId',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/mapa': typeof MapaRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
+  '/sensores/$sensorId': typeof SensoresSensorIdRoute
   '/bairros/': typeof BairrosIndexRoute
   '/municipios/': typeof MunicipiosIndexRoute
   '/sensores/': typeof SensoresIndexRoute
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/mapa': typeof MapaRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
+  '/sensores/$sensorId': typeof SensoresSensorIdRoute
   '/bairros': typeof BairrosIndexRoute
   '/municipios': typeof MunicipiosIndexRoute
   '/sensores': typeof SensoresIndexRoute
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/mapa': typeof MapaRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
+  '/sensores/$sensorId': typeof SensoresSensorIdRoute
   '/bairros/': typeof BairrosIndexRoute
   '/municipios/': typeof MunicipiosIndexRoute
   '/sensores/': typeof SensoresIndexRoute
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/bairros/$neighborhoodId'
     | '/municipios/$municipalityId'
+    | '/sensores/$sensorId'
     | '/bairros/'
     | '/municipios/'
     | '/sensores/'
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/bairros/$neighborhoodId'
     | '/municipios/$municipalityId'
+    | '/sensores/$sensorId'
     | '/bairros'
     | '/municipios'
     | '/sensores'
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/bairros/$neighborhoodId'
     | '/municipios/$municipalityId'
+    | '/sensores/$sensorId'
     | '/bairros/'
     | '/municipios/'
     | '/sensores/'
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   MapaRoute: typeof MapaRoute
   BairrosNeighborhoodIdRoute: typeof BairrosNeighborhoodIdRoute
   MunicipiosMunicipalityIdRoute: typeof MunicipiosMunicipalityIdRoute
+  SensoresSensorIdRoute: typeof SensoresSensorIdRoute
   BairrosIndexRoute: typeof BairrosIndexRoute
   MunicipiosIndexRoute: typeof MunicipiosIndexRoute
   SensoresIndexRoute: typeof SensoresIndexRoute
@@ -159,6 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BairrosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sensores/$sensorId': {
+      id: '/sensores/$sensorId'
+      path: '/sensores/$sensorId'
+      fullPath: '/sensores/$sensorId'
+      preLoaderRoute: typeof SensoresSensorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/municipios/$municipalityId': {
       id: '/municipios/$municipalityId'
       path: '/municipios/$municipalityId'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapaRoute: MapaRoute,
   BairrosNeighborhoodIdRoute: BairrosNeighborhoodIdRoute,
   MunicipiosMunicipalityIdRoute: MunicipiosMunicipalityIdRoute,
+  SensoresSensorIdRoute: SensoresSensorIdRoute,
   BairrosIndexRoute: BairrosIndexRoute,
   MunicipiosIndexRoute: MunicipiosIndexRoute,
   SensoresIndexRoute: SensoresIndexRoute,
