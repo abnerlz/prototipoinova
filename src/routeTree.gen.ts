@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MunicipiosIndexRouteImport } from './routes/municipios.index'
 
 const MapaRoute = MapaRouteImport.update({
   id: '/mapa',
@@ -22,31 +23,40 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MunicipiosIndexRoute = MunicipiosIndexRouteImport.update({
+  id: '/municipios/',
+  path: '/municipios/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mapa': typeof MapaRoute
+  '/municipios/': typeof MunicipiosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mapa': typeof MapaRoute
+  '/municipios': typeof MunicipiosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/mapa': typeof MapaRoute
+  '/municipios/': typeof MunicipiosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/mapa'
+  fullPaths: '/' | '/mapa' | '/municipios/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/mapa'
-  id: '__root__' | '/' | '/mapa'
+  to: '/' | '/mapa' | '/municipios'
+  id: '__root__' | '/' | '/mapa' | '/municipios/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MapaRoute: typeof MapaRoute
+  MunicipiosIndexRoute: typeof MunicipiosIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/municipios/': {
+      id: '/municipios/'
+      path: '/municipios'
+      fullPath: '/municipios/'
+      preLoaderRoute: typeof MunicipiosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MapaRoute: MapaRoute,
+  MunicipiosIndexRoute: MunicipiosIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
