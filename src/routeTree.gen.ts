@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as MapaRouteImport } from './routes/mapa'
+import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SensoresIndexRouteImport } from './routes/sensores.index'
@@ -22,6 +23,11 @@ import { Route as BairrosNeighborhoodIdRouteImport } from './routes/bairros.$nei
 const MapaRoute = MapaRouteImport.update({
   id: '/mapa',
   path: '/mapa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoricoRoute = HistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlertasRoute = AlertasRouteImport.update({
@@ -69,6 +75,7 @@ const BairrosNeighborhoodIdRoute = BairrosNeighborhoodIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
+  '/historico': typeof HistoricoRoute
   '/mapa': typeof MapaRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
+  '/historico': typeof HistoricoRoute
   '/mapa': typeof MapaRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
+  '/historico': typeof HistoricoRoute
   '/mapa': typeof MapaRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/alertas'
+    | '/historico'
     | '/mapa'
     | '/bairros/$neighborhoodId'
     | '/municipios/$municipalityId'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/alertas'
+    | '/historico'
     | '/mapa'
     | '/bairros/$neighborhoodId'
     | '/municipios/$municipalityId'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/alertas'
+    | '/historico'
     | '/mapa'
     | '/bairros/$neighborhoodId'
     | '/municipios/$municipalityId'
@@ -139,6 +151,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertasRoute: typeof AlertasRoute
+  HistoricoRoute: typeof HistoricoRoute
   MapaRoute: typeof MapaRoute
   BairrosNeighborhoodIdRoute: typeof BairrosNeighborhoodIdRoute
   MunicipiosMunicipalityIdRoute: typeof MunicipiosMunicipalityIdRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/mapa'
       fullPath: '/mapa'
       preLoaderRoute: typeof MapaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/historico': {
+      id: '/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof HistoricoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alertas': {
@@ -219,6 +239,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertasRoute: AlertasRoute,
+  HistoricoRoute: HistoricoRoute,
   MapaRoute: MapaRoute,
   BairrosNeighborhoodIdRoute: BairrosNeighborhoodIdRoute,
   MunicipiosMunicipalityIdRoute: MunicipiosMunicipalityIdRoute,
