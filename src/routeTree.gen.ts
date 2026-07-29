@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MunicipiosIndexRouteImport } from './routes/municipios.index'
+import { Route as MunicipiosMunicipalityIdRouteImport } from './routes/municipios.$municipalityId'
 
 const MapaRoute = MapaRouteImport.update({
   id: '/mapa',
@@ -28,34 +29,49 @@ const MunicipiosIndexRoute = MunicipiosIndexRouteImport.update({
   path: '/municipios/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MunicipiosMunicipalityIdRoute =
+  MunicipiosMunicipalityIdRouteImport.update({
+    id: '/municipios/$municipalityId',
+    path: '/municipios/$municipalityId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mapa': typeof MapaRoute
+  '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/municipios/': typeof MunicipiosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mapa': typeof MapaRoute
+  '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/municipios': typeof MunicipiosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/mapa': typeof MapaRoute
+  '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/municipios/': typeof MunicipiosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/mapa' | '/municipios/'
+  fullPaths: '/' | '/mapa' | '/municipios/$municipalityId' | '/municipios/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/mapa' | '/municipios'
-  id: '__root__' | '/' | '/mapa' | '/municipios/'
+  to: '/' | '/mapa' | '/municipios/$municipalityId' | '/municipios'
+  id:
+    | '__root__'
+    | '/'
+    | '/mapa'
+    | '/municipios/$municipalityId'
+    | '/municipios/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MapaRoute: typeof MapaRoute
+  MunicipiosMunicipalityIdRoute: typeof MunicipiosMunicipalityIdRoute
   MunicipiosIndexRoute: typeof MunicipiosIndexRoute
 }
 
@@ -82,12 +98,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MunicipiosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/municipios/$municipalityId': {
+      id: '/municipios/$municipalityId'
+      path: '/municipios/$municipalityId'
+      fullPath: '/municipios/$municipalityId'
+      preLoaderRoute: typeof MunicipiosMunicipalityIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MapaRoute: MapaRoute,
+  MunicipiosMunicipalityIdRoute: MunicipiosMunicipalityIdRoute,
   MunicipiosIndexRoute: MunicipiosIndexRoute,
 }
 export const routeTree = rootRouteImport
