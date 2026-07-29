@@ -1,24 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+import { FilterBar } from "@/components/dashboard/FilterBar";
+import { ScopeDashboard } from "@/components/dashboard/ScopeDashboard";
+
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Painel Geral — GeoAlerta RMR" },
+      { name: "description", content: "Índice de risco, sensores e previsão de deslizamentos em tempo real na Região Metropolitana do Recife." },
+      { property: "og:title", content: "Painel Geral — GeoAlerta RMR" },
+      { property: "og:description", content: "Monitoramento inteligente de encostas com IA preditiva." },
+    ],
+  }),
+  component: DashboardPage,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function DashboardPage() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <>
+      <h1 className="font-display text-xl font-bold">Dashboard da Região Metropolitana</h1>
+      <FilterBar />
+      <ScopeDashboard />
+    </>
   );
 }
