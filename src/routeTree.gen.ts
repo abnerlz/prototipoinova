@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MunicipiosIndexRouteImport } from './routes/municipios.index'
 import { Route as BairrosIndexRouteImport } from './routes/bairros.index'
 import { Route as MunicipiosMunicipalityIdRouteImport } from './routes/municipios.$municipalityId'
+import { Route as BairrosNeighborhoodIdRouteImport } from './routes/bairros.$neighborhoodId'
 
 const MapaRoute = MapaRouteImport.update({
   id: '/mapa',
@@ -41,10 +42,16 @@ const MunicipiosMunicipalityIdRoute =
     path: '/municipios/$municipalityId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const BairrosNeighborhoodIdRoute = BairrosNeighborhoodIdRouteImport.update({
+  id: '/bairros/$neighborhoodId',
+  path: '/bairros/$neighborhoodId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mapa': typeof MapaRoute
+  '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/bairros/': typeof BairrosIndexRoute
   '/municipios/': typeof MunicipiosIndexRoute
@@ -52,6 +59,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mapa': typeof MapaRoute
+  '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/bairros': typeof BairrosIndexRoute
   '/municipios': typeof MunicipiosIndexRoute
@@ -60,6 +68,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/mapa': typeof MapaRoute
+  '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/bairros/': typeof BairrosIndexRoute
   '/municipios/': typeof MunicipiosIndexRoute
@@ -69,15 +78,23 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/mapa'
+    | '/bairros/$neighborhoodId'
     | '/municipios/$municipalityId'
     | '/bairros/'
     | '/municipios/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/mapa' | '/municipios/$municipalityId' | '/bairros' | '/municipios'
+  to:
+    | '/'
+    | '/mapa'
+    | '/bairros/$neighborhoodId'
+    | '/municipios/$municipalityId'
+    | '/bairros'
+    | '/municipios'
   id:
     | '__root__'
     | '/'
     | '/mapa'
+    | '/bairros/$neighborhoodId'
     | '/municipios/$municipalityId'
     | '/bairros/'
     | '/municipios/'
@@ -86,6 +103,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MapaRoute: typeof MapaRoute
+  BairrosNeighborhoodIdRoute: typeof BairrosNeighborhoodIdRoute
   MunicipiosMunicipalityIdRoute: typeof MunicipiosMunicipalityIdRoute
   BairrosIndexRoute: typeof BairrosIndexRoute
   MunicipiosIndexRoute: typeof MunicipiosIndexRoute
@@ -128,12 +146,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MunicipiosMunicipalityIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bairros/$neighborhoodId': {
+      id: '/bairros/$neighborhoodId'
+      path: '/bairros/$neighborhoodId'
+      fullPath: '/bairros/$neighborhoodId'
+      preLoaderRoute: typeof BairrosNeighborhoodIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MapaRoute: MapaRoute,
+  BairrosNeighborhoodIdRoute: BairrosNeighborhoodIdRoute,
   MunicipiosMunicipalityIdRoute: MunicipiosMunicipalityIdRoute,
   BairrosIndexRoute: BairrosIndexRoute,
   MunicipiosIndexRoute: MunicipiosIndexRoute,
