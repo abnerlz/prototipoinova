@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as AlertasRouteImport } from './routes/alertas'
@@ -20,6 +21,11 @@ import { Route as SensoresSensorIdRouteImport } from './routes/sensores.$sensorI
 import { Route as MunicipiosMunicipalityIdRouteImport } from './routes/municipios.$municipalityId'
 import { Route as BairrosNeighborhoodIdRouteImport } from './routes/bairros.$neighborhoodId'
 
+const RelatoriosRoute = RelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MapaRoute = MapaRouteImport.update({
   id: '/mapa',
   path: '/mapa',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/alertas': typeof AlertasRoute
   '/historico': typeof HistoricoRoute
   '/mapa': typeof MapaRoute
+  '/relatorios': typeof RelatoriosRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/sensores/$sensorId': typeof SensoresSensorIdRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/alertas': typeof AlertasRoute
   '/historico': typeof HistoricoRoute
   '/mapa': typeof MapaRoute
+  '/relatorios': typeof RelatoriosRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/sensores/$sensorId': typeof SensoresSensorIdRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/alertas': typeof AlertasRoute
   '/historico': typeof HistoricoRoute
   '/mapa': typeof MapaRoute
+  '/relatorios': typeof RelatoriosRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/sensores/$sensorId': typeof SensoresSensorIdRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/alertas'
     | '/historico'
     | '/mapa'
+    | '/relatorios'
     | '/bairros/$neighborhoodId'
     | '/municipios/$municipalityId'
     | '/sensores/$sensorId'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/alertas'
     | '/historico'
     | '/mapa'
+    | '/relatorios'
     | '/bairros/$neighborhoodId'
     | '/municipios/$municipalityId'
     | '/sensores/$sensorId'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/alertas'
     | '/historico'
     | '/mapa'
+    | '/relatorios'
     | '/bairros/$neighborhoodId'
     | '/municipios/$municipalityId'
     | '/sensores/$sensorId'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   AlertasRoute: typeof AlertasRoute
   HistoricoRoute: typeof HistoricoRoute
   MapaRoute: typeof MapaRoute
+  RelatoriosRoute: typeof RelatoriosRoute
   BairrosNeighborhoodIdRoute: typeof BairrosNeighborhoodIdRoute
   MunicipiosMunicipalityIdRoute: typeof MunicipiosMunicipalityIdRoute
   SensoresSensorIdRoute: typeof SensoresSensorIdRoute
@@ -163,6 +176,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/relatorios': {
+      id: '/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mapa': {
       id: '/mapa'
       path: '/mapa'
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertasRoute: AlertasRoute,
   HistoricoRoute: HistoricoRoute,
   MapaRoute: MapaRoute,
+  RelatoriosRoute: RelatoriosRoute,
   BairrosNeighborhoodIdRoute: BairrosNeighborhoodIdRoute,
   MunicipiosMunicipalityIdRoute: MunicipiosMunicipalityIdRoute,
   SensoresSensorIdRoute: SensoresSensorIdRoute,
