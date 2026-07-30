@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useMonitoring } from "@/context/MonitoringContext";
 import { getMunicipality, getNeighborhood, getSensorMeta } from "@/data/regions";
 import { assessRisk } from "@/lib/ai";
+import { SCENARIOS } from "@/lib/simulation-engine";
 import { downloadCsv } from "@/lib/export";
 
 export const Route = createFileRoute("/historico")({
@@ -66,9 +67,54 @@ function HistoricoPage() {
       <FilterBar />
 
       <Card className="glass border-border/60">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Simulações registradas ({simulationHistory.length})</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {simulationHistory.length ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Hora</TableHead>
+                  <TableHead>Município</TableHead>
+                  <TableHead>Bairro</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead className="text-right">Maior índice</TableHead>
+                  <TableHead className="text-right">Duração</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {simulationHistory.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell>{new Date(s.startedAt).toLocaleDateString("pt-BR")}</TableCell>
+                    <TableCell>{new Date(s.startedAt).toLocaleTimeString("pt-BR")}</TableCell>
+                    <TableCell>{getMunicipality(s.municipalityId)?.name}</TableCell>
+                    <TableCell>{getNeighborhood(s.neighborhoodId)?.name}</TableCell>
+                    <TableCell>{SCENARIOS[s.scenario].label}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {s.peakScore} <RiskBadge level={s.peakLevel} />
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {Math.round(s.durationMs / 1000)}s
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Nenhuma simulação registrada. Inicie uma pelo botão “Iniciar Simulação” no Dashboard.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="glass border-border/60">
         <CardHeader className="pb-2"><CardTitle className="text-base">Séries agregadas</CardTitle></CardHeader>
         <CardContent><MultiSensorChart sensors={sensors} period={filters.period} height={300} /></CardContent>
       </Card>
+
 
       <Card className="glass border-border/60">
         <CardHeader className="pb-2"><CardTitle className="text-base">Registros ({rows.length})</CardTitle></CardHeader>
