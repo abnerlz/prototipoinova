@@ -143,6 +143,7 @@ const FIELD: Record<SensorType, keyof EnvState> = {
  */
 export function applyScenario(
   state: EnvState,
+  baseline: EnvState,
   scenario: SimulationScenario,
   progress: number,
 ): EnvState {
@@ -151,10 +152,14 @@ export function applyScenario(
     if (intensity <= 0) return;
     const field = FIELD[phase.key];
     const current = next[field] as number;
-    (next[field] as number) = lerp(current, Math.max(current, phase.target), intensity);
+    const base = baseline[field] as number;
+    // Valor absoluto derivado da linha de base — evita crescimento composto.
+    const forced = lerp(base, Math.max(base, phase.target), intensity);
+    (next[field] as number) = Math.max(current * (1 - intensity), forced);
   });
   return next;
 }
+
 
 /** Rótulo da fase atualmente dominante. */
 export function currentPhaseLabel(scenario: SimulationScenario, progress: number) {
