@@ -74,6 +74,7 @@ interface SimRuntime {
   progress: number;
   peakScore: number;
   reachedPhases: Set<string>;
+  baseline: EnvState;
   criticalNotified: boolean;
 }
 
