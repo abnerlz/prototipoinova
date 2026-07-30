@@ -93,3 +93,52 @@ export interface Filters {
   sensorType: SensorType | "all";
   period: PeriodOption["id"];
 }
+
+/* ---------------- Simulação controlada (modo apresentação) ---------------- */
+
+export type SimulationScenario =
+  | "chuva"
+  | "saturacao"
+  | "vibracao"
+  | "movimento"
+  | "completa";
+
+export type SimulationSpeed = "lenta" | "normal" | "rapida";
+
+export type SimulationPhaseKey = SensorType;
+
+export interface SimulationEvent {
+  timestamp: number;
+  message: string;
+  level: RiskLevel;
+  score: number;
+}
+
+export interface SimulationRecord {
+  id: string;
+  scenario: SimulationScenario;
+  speed: SimulationSpeed;
+  municipalityId: string;
+  neighborhoodId: string;
+  startedAt: number;
+  endedAt: number;
+  durationMs: number;
+  peakScore: number;
+  peakLevel: RiskLevel;
+  events: SimulationEvent[];
+}
+
+export interface SimulationState {
+  active: boolean;
+  /** true enquanto os sensores retornam gradualmente ao normal. */
+  recovering: boolean;
+  scenario: SimulationScenario;
+  speed: SimulationSpeed;
+  municipalityId: string;
+  neighborhoodId: string;
+  startedAt: number;
+  progress: number;
+  currentPhase: string;
+  peakScore: number;
+  events: SimulationEvent[];
+}

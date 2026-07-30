@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { ScopeDashboard } from "@/components/dashboard/ScopeDashboard";
+import { SimulationControl } from "@/components/simulation/SimulationControl";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -18,9 +19,13 @@ export const Route = createFileRoute("/")({
 function DashboardPage() {
   return (
     <>
-      <h1 className="font-display text-xl font-bold">Dashboard da Região Metropolitana</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-xl font-bold">Dashboard da Região Metropolitana</h1>
+      </div>
+      <SimulationControl />
       <FilterBar />
       <ScopeDashboard />
     </>
   );
 }
+
