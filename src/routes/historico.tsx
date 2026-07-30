@@ -25,7 +25,7 @@ export const Route = createFileRoute("/historico")({
 });
 
 function HistoricoPage() {
-  const { filters, sensorsIn } = useMonitoring();
+  const { filters, sensorsIn, simulationHistory } = useMonitoring();
   const sensors = sensorsIn(filters.municipalityId, filters.neighborhoodId, filters.sensorType);
   const rows = sensors.slice(0, 60).map((s) => {
     const risk = assessRisk([s]);
