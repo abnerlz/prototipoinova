@@ -146,7 +146,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
 
         const target = statesRef.current[sim.neighborhoodId];
         if (target) {
-          statesRef.current[sim.neighborhoodId] = applyScenario(target, sim.scenario, sim.progress);
+          statesRef.current[sim.neighborhoodId] = applyScenario(target, sim.baseline, sim.scenario, sim.progress);
         }
 
         if (!sim.recovering) {
@@ -247,6 +247,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       progress: 0,
       peakScore: 0,
       reachedPhases: new Set<string>(),
+      baseline: { ...statesRef.current[input.neighborhoodId] },
       criticalNotified: false,
     };
     setSimulation({
