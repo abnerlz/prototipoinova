@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
       { title: "Painel Geral — GeoAlerta RMR" },
       { name: "description", content: "Índice de risco, sensores e previsão de deslizamentos em tempo real na Região Metropolitana do Recife." },
       { property: "og:title", content: "Painel Geral — GeoAlerta RMR" },
-      { property: "og:description", content: "Monitoramento inteligente de encostas com IA preditiva." },
+      { property: "og:description", content: "Índice de risco, sensores e previsão de deslizamentos em tempo real na Região Metropolitana do Recife." },
     ],
   }),
   component: DashboardPage,

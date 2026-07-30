@@ -78,14 +78,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "GeoAlerta RMR — Monitoramento de Deslizamentos" },
+      { title: "Painel Geral — GeoAlerta RMR" },
       {
         name: "description",
         content:
-          "Centro de operações para monitoramento e prevenção de deslizamentos na Região Metropolitana do Recife.",
+          "Índice de risco, sensores e previsão de deslizamentos em tempo real na Região Metropolitana do Recife.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "Painel Geral — GeoAlerta RMR" },
+      { name: "twitter:title", content: "Painel Geral — GeoAlerta RMR" },
+      { property: "og:description", content: "Índice de risco, sensores e previsão de deslizamentos em tempo real na Região Metropolitana do Recife." },
+      { name: "twitter:description", content: "Índice de risco, sensores e previsão de deslizamentos em tempo real na Região Metropolitana do Recife." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/27806609-3dfa-4dcf-8954-f543c4216e30/id-preview-eeddd069--50b0c3d3-2649-4179-8293-a70f6ce2ed79.lovable.app-1785411445777.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/27806609-3dfa-4dcf-8954-f543c4216e30/id-preview-eeddd069--50b0c3d3-2649-4179-8293-a70f6ce2ed79.lovable.app-1785411445777.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
