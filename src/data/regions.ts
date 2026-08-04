@@ -1,7 +1,7 @@
 import type { Municipality, Neighborhood, PeriodOption, SensorType } from "@/types";
 
 /** Municípios monitorados da Região Metropolitana do Recife. */
-export const MUNICIPALITIES: Municipality[] = [
+const ALL_MUNICIPALITIES: Municipality[] = [
   { id: "recife", name: "Recife", center: { lat: -8.0476, lng: -34.877 }, population: 1653461 },
   { id: "olinda", name: "Olinda", center: { lat: -8.0089, lng: -34.8553 }, population: 393115 },
   { id: "paulista", name: "Paulista", center: { lat: -7.9407, lng: -34.8728 }, population: 331774 },
@@ -62,6 +62,11 @@ const RAW: RawNeighborhood[] = [
   { name: "Passarinho", municipalityId: "olinda", offset: [0.023, -0.033], susceptibility: 0.79, households: 1900 },
 ];
 
+
+/** Apenas municípios com bairros monitorados aparecem na plataforma. */
+export const MUNICIPALITIES: Municipality[] = ALL_MUNICIPALITIES.filter((m) =>
+  RAW.some((n) => n.municipalityId === m.id),
+);
 
 const slug = (value: string) =>
   value
