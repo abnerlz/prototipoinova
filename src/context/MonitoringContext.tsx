@@ -76,6 +76,8 @@ interface SimRuntime {
   reachedPhases: Set<string>;
   baseline: EnvState;
   criticalNotified: boolean;
+  /** Variação aleatória dos alvos: cada execução gera valores diferentes. */
+  jitter: number;
 }
 
 export function MonitoringProvider({ children }: { children: ReactNode }) {
@@ -95,6 +97,14 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
   const simRef = useRef<SimRuntime | null>(null);
   const [simulation, setSimulation] = useState<SimulationState | null>(null);
   const [simulationHistory, setSimulationHistory] = useState<SimulationRecord[]>([]);
+
+  // Cada carregamento gera um conjunto de leituras diferente, dentro da faixa
+  // realista — sem divergir da renderização do servidor (roda após a montagem).
+  useEffect(() => {
+    const salt = Math.floor(Math.random() * 1_000_000);
+    statesRef.current = createInitialStates(salt);
+    setSensors(createSensors(statesRef.current, salt));
+  }, []);
 
   const setFilters = useCallback((patch: Partial<Filters>) => {
     setFiltersState((prev) => {
@@ -146,7 +156,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
 
         const target = statesRef.current[sim.neighborhoodId];
         if (target) {
-          statesRef.current[sim.neighborhoodId] = applyScenario(target, sim.baseline, sim.scenario, sim.progress);
+          statesRef.current[sim.neighborhoodId] = applyScenario(target, sim.baseline, sim.scenario, sim.progress, sim.jitter);
         }
 
         if (!sim.recovering) {
@@ -249,6 +259,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       reachedPhases: new Set<string>(),
       baseline: { ...statesRef.current[input.neighborhoodId] },
       criticalNotified: false,
+      jitter: 0.85 + Math.random() * 0.3,
     };
     setSimulation({
       active: true,

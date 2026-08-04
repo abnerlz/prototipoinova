@@ -146,20 +146,35 @@ export function applyScenario(
   baseline: EnvState,
   scenario: SimulationScenario,
   progress: number,
+  jitter = 1,
 ): EnvState {
   const next: EnvState = { ...state };
+  const noise = (amp: number) => (Math.random() - 0.5) * 2 * amp;
+
   phaseIntensities(scenario, progress).forEach(({ phase, intensity }) => {
     if (intensity <= 0) return;
     const field = FIELD[phase.key];
     const current = next[field] as number;
     const base = baseline[field] as number;
-    // Valor absoluto derivado da linha de base — evita crescimento composto.
-    const forced = lerp(base, Math.max(base, phase.target), intensity);
-    (next[field] as number) = Math.max(current * (1 - intensity), forced);
+
+    // Rampa suavizada (ease-in-out) + micro-oscilação: a grandeza avança em
+    // degraus, com pequenos recuos, como um sensor real em campo.
+    const eased = intensity * intensity * (3 - 2 * intensity);
+    const wobble = 1 + Math.sin(progress * 14 + phase.start * 9) * 0.06;
+    const target = Math.max(base, phase.target * jitter) * wobble;
+    const desired = lerp(base, target, eased);
+
+    // Aproximação gradual do alvo — pode subir ou cair conforme a fase evolui.
+    const rate = 0.35 + eased * 0.25;
+    (next[field] as number) = Math.max(0, current + (desired - current) * rate + noise(desired * 0.015));
   });
+
+  // A temperatura acompanha a chuva (cai quando chove forte).
+  if (next.rain > state.rain + 1) {
+    next.temperature = Math.max(22, next.temperature - 0.15);
+  }
   return next;
 }
-
 
 /** Rótulo da fase atualmente dominante. */
 export function currentPhaseLabel(scenario: SimulationScenario, progress: number) {
