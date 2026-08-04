@@ -86,16 +86,68 @@ function trendFactor(sensors: Sensor[]): number {
   return deltas.reduce((a, b) => a + b, 0) / deltas.length;
 }
 
+/**
+ * Faixas de normalidade por tipo de sensor.
+ * `warn` = começa a sair do padrão, `severe` = claramente alterado.
+ */
+const THRESHOLDS: Partial<Record<SensorType, { warn: number; severe: number }>> = {
+  pluviosidade: { warn: 14, severe: 34 },
+  umidade: { warn: 74, severe: 88 },
+  inclinacao: { warn: 4, severe: 9 },
+  deslocamento: { warn: 16, severe: 30 },
+  vibracao: { warn: 5, severe: 9 },
+};
+
+const BANDS: Record<RiskLevel, [number, number]> = {
+  baixo: [4, 25],
+  moderado: [27, 50],
+  alto: [52, 75],
+  critico: [77, 97],
+};
+
+/** Nível de risco pela COMBINAÇÃO dos sensores, não por um único valor. */
+function combinedLevel(averages: Partial<Record<SensorType, number>>) {
+  let warn = 0;
+  let severe = 0;
+  const flags: Partial<Record<SensorType, "warn" | "severe">> = {};
+  (Object.keys(THRESHOLDS) as SensorType[]).forEach((type) => {
+    const value = averages[type];
+    const t = THRESHOLDS[type];
+    if (value === undefined || !t) return;
+    if (value >= t.severe) {
+      severe += 1;
+      warn += 1;
+      flags[type] = "severe";
+    } else if (value >= t.warn) {
+      warn += 1;
+      flags[type] = "warn";
+    }
+  });
+
+  const chuvaCritica =
+    flags.pluviosidade === "severe" &&
+    flags.umidade === "severe" &&
+    Boolean(flags.inclinacao) &&
+    Boolean(flags.vibracao);
+
+  let level: RiskLevel = "baixo";
+  if (chuvaCritica || severe >= 3) level = "critico";
+  else if (warn >= 3 || severe >= 2) level = "alto";
+  else if (warn >= 1) level = "moderado";
+
+  return { level, warn, severe, flags };
+}
+
 export function assessRisk(sensors: Sensor[], previousAlerts = 0): RiskAssessment {
   const averages = averageByType(sensors);
   const contributions: RiskAssessment["contributions"] = [];
-  let score = 0;
+  let raw = 0;
 
   MODEL.forEach((entry) => {
     const value = averages[entry.type];
     if (value === undefined) return;
     const contribution = entry.normalize(value) * entry.weight * 100;
-    score += contribution;
+    raw += contribution;
     contributions.push({
       type: entry.type,
       label: getSensorMeta(entry.type).label,
@@ -105,29 +157,38 @@ export function assessRisk(sensors: Sensor[], previousAlerts = 0): RiskAssessmen
     });
   });
 
-  // Suscetibilidade geológica do bairro predominante.
   const neighborhood = sensors[0] ? getNeighborhood(sensors[0].neighborhoodId) : undefined;
   const susceptibility = neighborhood?.susceptibility ?? 0.6;
-  score *= 0.75 + susceptibility * 0.4;
+  raw *= 0.75 + susceptibility * 0.4;
 
   const trend = trendFactor(sensors);
-  score += trend * 18;
-  score += Math.min(6, previousAlerts * 1.5);
-  score = Math.max(0, Math.min(100, score));
+  raw += trend * 12;
+  raw += Math.min(6, previousAlerts * 1.5);
+  raw = Math.max(0, Math.min(100, raw));
 
-  const level = riskLevelFromScore(score);
+  // O índice é posicionado dentro da faixa do nível combinado.
+  const { level, warn, severe, flags } = combinedLevel(averages);
+  const [lo, hi] = BANDS[level];
+  const score = Math.max(lo, Math.min(hi, lo + (hi - lo) * Math.min(1, raw / 100 + severe * 0.12)));
+
   const sorted = [...contributions].sort((a, b) => b.weight - a.weight);
   const reasons: string[] = [];
 
-  sorted.slice(0, 3).forEach((c) => {
-    reasons.push(
-      `${c.label} em ${c.value} ${c.unit} responde por ${c.weight} pontos do índice atual.`,
-    );
+  const altered = (Object.keys(flags) as SensorType[]).map((t) => getSensorMeta(t).label);
+  reasons.push(
+    altered.length
+      ? `${altered.length} sensor(es) fora do padrão simultaneamente: ${altered.join(", ")}.`
+      : "Todos os sensores operam dentro das faixas de normalidade.",
+  );
+  sorted.slice(0, 2).forEach((c) => {
+    reasons.push(`${c.label} em ${c.value} ${c.unit} (peso ${c.weight} no índice combinado).`);
   });
   if (trend > 0.05) {
-    reasons.push("Tendência de agravamento detectada nas últimas 6 horas (umidade e deslocamento em alta).");
+    reasons.push("Tendência de agravamento nas últimas 6 horas (umidade e deslocamento em alta).");
   } else if (trend < -0.05) {
     reasons.push("Tendência de estabilização: umidade e deslocamento em queda nas últimas 6 horas.");
+  } else {
+    reasons.push("Leituras estáveis, com oscilações dentro do esperado para o período.");
   }
   if (susceptibility > 0.8) {
     reasons.push("Área classificada com alta suscetibilidade geológica (encostas íngremes e ocupação densa).");
@@ -137,7 +198,7 @@ export function assessRisk(sensors: Sensor[], previousAlerts = 0): RiskAssessmen
   }
 
   const probability24h = Math.round(
-    Math.max(1, Math.min(98, score * 0.85 + Math.max(0, trend) * 25 + susceptibility * 6)),
+    Math.max(1, Math.min(98, score * 0.8 + warn * 3 + Math.max(0, trend) * 20 + susceptibility * 5)),
   );
 
   return {
