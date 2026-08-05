@@ -254,7 +254,7 @@ export function ScopeDashboard({ municipalityId, neighborhoodId }: ScopeDashboar
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {scopeMunicipality
               ? neighborhoodRanking.map(({ neighborhood, assessment }) => (
-                  <Link key={neighborhood.id} to="/bairros/$neighborhoodId" params={{ neighborhoodId: neighborhood.id }}>
+                  <Link key={neighborhood.id} to="/localidades/$neighborhoodId" params={{ neighborhoodId: neighborhood.id }}>
                     <motion.div whileHover={{ y: -3 }} className="glass h-full rounded-xl p-4">
                       <div className="flex items-start justify-between gap-2">
                         <p className="font-display font-semibold">{neighborhood.name}</p>

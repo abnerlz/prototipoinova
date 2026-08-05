@@ -24,7 +24,7 @@ function BairroPage() {
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        <Link to="/bairros" className="text-xs text-muted-foreground hover:text-primary">← Bairros</Link>
+        <Link to="/localidades" className="text-xs text-muted-foreground hover:text-primary">← Localidades</Link>
         <h1 className="font-display text-xl font-bold">{neighborhood.name}</h1>
         <span className="text-sm text-muted-foreground">{getMunicipality(neighborhood.municipalityId)?.name}</span>
       </div>

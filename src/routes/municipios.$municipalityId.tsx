@@ -27,7 +27,7 @@ function MunicipioPage() {
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        <Link to="/municipios" className="text-xs text-muted-foreground hover:text-primary">
+        <Link to="/localidades" className="text-xs text-muted-foreground hover:text-primary">
           ← Municípios
         </Link>
         <h1 className="font-display text-xl font-bold">{municipality.name}</h1>
