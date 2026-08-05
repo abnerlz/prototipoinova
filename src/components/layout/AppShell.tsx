@@ -9,9 +9,8 @@ import {
   LayoutDashboard,
   Map as MapIcon,
   Building2,
-  Home,
-  Settings,
   Radio,
+  ShieldAlert,
 } from "lucide-react";
 
 import { EmitAlertButton } from "@/components/alerts/EmitAlertButton";
@@ -35,14 +34,13 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Mapa", url: "/mapa", icon: MapIcon },
-  { title: "Municípios", url: "/municipios", icon: Building2 },
-  { title: "Bairros", url: "/bairros", icon: Home },
+  { title: "Localidades", url: "/localidades", icon: Building2 },
   { title: "Sensores", url: "/sensores", icon: Cpu },
   { title: "Alertas", url: "/alertas", icon: AlertTriangle },
   { title: "Histórico", url: "/historico", icon: History },
   { title: "Relatórios", url: "/relatorios", icon: FileBarChart },
   { title: "Inteligência Artificial", url: "/ia", icon: BrainCircuit },
-  { title: "Configurações", url: "/configuracoes", icon: Settings },
+  { title: "Apoio à Decisão", url: "/apoio-decisao", icon: ShieldAlert },
 ] as const;
 
 function AppSidebar() {
