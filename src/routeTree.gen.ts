@@ -17,6 +17,7 @@ import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SensoresIndexRouteImport } from './routes/sensores.index'
 import { Route as MunicipiosIndexRouteImport } from './routes/municipios.index'
+import { Route as LocalidadesIndexRouteImport } from './routes/localidades.index'
 import { Route as BairrosIndexRouteImport } from './routes/bairros.index'
 import { Route as SensoresSensorIdRouteImport } from './routes/sensores.$sensorId'
 import { Route as MunicipiosMunicipalityIdRouteImport } from './routes/municipios.$municipalityId'
@@ -62,6 +63,11 @@ const MunicipiosIndexRoute = MunicipiosIndexRouteImport.update({
   path: '/municipios/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LocalidadesIndexRoute = LocalidadesIndexRouteImport.update({
+  id: '/localidades/',
+  path: '/localidades/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BairrosIndexRoute = BairrosIndexRouteImport.update({
   id: '/bairros/',
   path: '/bairros/',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/sensores/$sensorId': typeof SensoresSensorIdRoute
   '/bairros/': typeof BairrosIndexRoute
+  '/localidades/': typeof LocalidadesIndexRoute
   '/municipios/': typeof MunicipiosIndexRoute
   '/sensores/': typeof SensoresIndexRoute
 }
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/sensores/$sensorId': typeof SensoresSensorIdRoute
   '/bairros': typeof BairrosIndexRoute
+  '/localidades': typeof LocalidadesIndexRoute
   '/municipios': typeof MunicipiosIndexRoute
   '/sensores': typeof SensoresIndexRoute
 }
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/sensores/$sensorId': typeof SensoresSensorIdRoute
   '/bairros/': typeof BairrosIndexRoute
+  '/localidades/': typeof LocalidadesIndexRoute
   '/municipios/': typeof MunicipiosIndexRoute
   '/sensores/': typeof SensoresIndexRoute
 }
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/municipios/$municipalityId'
     | '/sensores/$sensorId'
     | '/bairros/'
+    | '/localidades/'
     | '/municipios/'
     | '/sensores/'
   fileRoutesByTo: FileRoutesByTo
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/municipios/$municipalityId'
     | '/sensores/$sensorId'
     | '/bairros'
+    | '/localidades'
     | '/municipios'
     | '/sensores'
   id:
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/municipios/$municipalityId'
     | '/sensores/$sensorId'
     | '/bairros/'
+    | '/localidades/'
     | '/municipios/'
     | '/sensores/'
   fileRoutesById: FileRoutesById
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   MunicipiosMunicipalityIdRoute: typeof MunicipiosMunicipalityIdRoute
   SensoresSensorIdRoute: typeof SensoresSensorIdRoute
   BairrosIndexRoute: typeof BairrosIndexRoute
+  LocalidadesIndexRoute: typeof LocalidadesIndexRoute
   MunicipiosIndexRoute: typeof MunicipiosIndexRoute
   SensoresIndexRoute: typeof SensoresIndexRoute
 }
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MunicipiosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/localidades/': {
+      id: '/localidades/'
+      path: '/localidades'
+      fullPath: '/localidades/'
+      preLoaderRoute: typeof LocalidadesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bairros/': {
       id: '/bairros/'
       path: '/bairros'
@@ -287,19 +307,10 @@ const rootRouteChildren: RootRouteChildren = {
   MunicipiosMunicipalityIdRoute: MunicipiosMunicipalityIdRoute,
   SensoresSensorIdRoute: SensoresSensorIdRoute,
   BairrosIndexRoute: BairrosIndexRoute,
+  LocalidadesIndexRoute: LocalidadesIndexRoute,
   MunicipiosIndexRoute: MunicipiosIndexRoute,
   SensoresIndexRoute: SensoresIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
