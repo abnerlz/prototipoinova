@@ -21,6 +21,7 @@ import { Route as LocalidadesIndexRouteImport } from './routes/localidades.index
 import { Route as BairrosIndexRouteImport } from './routes/bairros.index'
 import { Route as SensoresSensorIdRouteImport } from './routes/sensores.$sensorId'
 import { Route as MunicipiosMunicipalityIdRouteImport } from './routes/municipios.$municipalityId'
+import { Route as LocalidadesNeighborhoodIdRouteImport } from './routes/localidades.$neighborhoodId'
 import { Route as BairrosNeighborhoodIdRouteImport } from './routes/bairros.$neighborhoodId'
 
 const RelatoriosRoute = RelatoriosRouteImport.update({
@@ -84,6 +85,12 @@ const MunicipiosMunicipalityIdRoute =
     path: '/municipios/$municipalityId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LocalidadesNeighborhoodIdRoute =
+  LocalidadesNeighborhoodIdRouteImport.update({
+    id: '/localidades/$neighborhoodId',
+    path: '/localidades/$neighborhoodId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BairrosNeighborhoodIdRoute = BairrosNeighborhoodIdRouteImport.update({
   id: '/bairros/$neighborhoodId',
   path: '/bairros/$neighborhoodId',
@@ -98,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/mapa': typeof MapaRoute
   '/relatorios': typeof RelatoriosRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
+  '/localidades/$neighborhoodId': typeof LocalidadesNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/sensores/$sensorId': typeof SensoresSensorIdRoute
   '/bairros/': typeof BairrosIndexRoute
@@ -113,6 +121,7 @@ export interface FileRoutesByTo {
   '/mapa': typeof MapaRoute
   '/relatorios': typeof RelatoriosRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
+  '/localidades/$neighborhoodId': typeof LocalidadesNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/sensores/$sensorId': typeof SensoresSensorIdRoute
   '/bairros': typeof BairrosIndexRoute
@@ -129,6 +138,7 @@ export interface FileRoutesById {
   '/mapa': typeof MapaRoute
   '/relatorios': typeof RelatoriosRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
+  '/localidades/$neighborhoodId': typeof LocalidadesNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
   '/sensores/$sensorId': typeof SensoresSensorIdRoute
   '/bairros/': typeof BairrosIndexRoute
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/relatorios'
     | '/bairros/$neighborhoodId'
+    | '/localidades/$neighborhoodId'
     | '/municipios/$municipalityId'
     | '/sensores/$sensorId'
     | '/bairros/'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/relatorios'
     | '/bairros/$neighborhoodId'
+    | '/localidades/$neighborhoodId'
     | '/municipios/$municipalityId'
     | '/sensores/$sensorId'
     | '/bairros'
@@ -176,6 +188,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/relatorios'
     | '/bairros/$neighborhoodId'
+    | '/localidades/$neighborhoodId'
     | '/municipios/$municipalityId'
     | '/sensores/$sensorId'
     | '/bairros/'
@@ -192,6 +205,7 @@ export interface RootRouteChildren {
   MapaRoute: typeof MapaRoute
   RelatoriosRoute: typeof RelatoriosRoute
   BairrosNeighborhoodIdRoute: typeof BairrosNeighborhoodIdRoute
+  LocalidadesNeighborhoodIdRoute: typeof LocalidadesNeighborhoodIdRoute
   MunicipiosMunicipalityIdRoute: typeof MunicipiosMunicipalityIdRoute
   SensoresSensorIdRoute: typeof SensoresSensorIdRoute
   BairrosIndexRoute: typeof BairrosIndexRoute
@@ -286,6 +300,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MunicipiosMunicipalityIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/localidades/$neighborhoodId': {
+      id: '/localidades/$neighborhoodId'
+      path: '/localidades/$neighborhoodId'
+      fullPath: '/localidades/$neighborhoodId'
+      preLoaderRoute: typeof LocalidadesNeighborhoodIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bairros/$neighborhoodId': {
       id: '/bairros/$neighborhoodId'
       path: '/bairros/$neighborhoodId'
@@ -304,6 +325,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapaRoute: MapaRoute,
   RelatoriosRoute: RelatoriosRoute,
   BairrosNeighborhoodIdRoute: BairrosNeighborhoodIdRoute,
+  LocalidadesNeighborhoodIdRoute: LocalidadesNeighborhoodIdRoute,
   MunicipiosMunicipalityIdRoute: MunicipiosMunicipalityIdRoute,
   SensoresSensorIdRoute: SensoresSensorIdRoute,
   BairrosIndexRoute: BairrosIndexRoute,
