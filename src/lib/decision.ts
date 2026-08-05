@@ -116,7 +116,7 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
       action: "Intensificar o monitoramento da área",
       priority: risk.level === "critico" ? "alta" : risk.level === "alto" ? "alta" : "moderada",
       rationale: `Índice de risco em ${risk.score} (${risk.trend}) com ${context}. Reduzir o intervalo de leitura e acompanhar a evolução em tempo real.`,
-      deadline: risk.level === "baixo" ? "24h" : "Imediato",
+      deadline: "Imediato",
     });
   }
 
@@ -127,7 +127,7 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
       action: "Enviar equipe para vistoria técnica",
       priority: risk.level === "critico" ? "alta" : risk.level === "alto" ? "alta" : "moderada",
       rationale: `Sinais de movimentação do solo em ${scopeLabel}${tilt !== undefined ? ` (inclinação ${tilt.toFixed(1)}°)` : ""}${displacement !== undefined ? ` e deslocamento de ${displacement.toFixed(1)} mm` : ""}. Vistoria presencial confirma trincas, surgências e estabilidade das encostas.`,
-      deadline: risk.level === "baixo" ? "48h" : "12h",
+      deadline: risk.score >= 35 ? "12h" : "48h",
     });
   }
 
