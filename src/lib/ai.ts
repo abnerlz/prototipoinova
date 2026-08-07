@@ -55,6 +55,26 @@ export const RISK_TOKEN: Record<RiskLevel, string> = {
   critico: "risk-critical",
 };
 
+/** Médias por tipo em um instante anterior do histórico (k passos atrás). */
+function averagesAtOffset(sensors: Sensor[], k: number): Partial<Record<SensorType, number>> {
+  const acc: Partial<Record<SensorType, { sum: number; n: number }>> = {};
+  sensors
+    .filter((s) => s.status === "online")
+    .forEach((s) => {
+      const point = s.history[s.history.length - 1 - k];
+      if (!point) return;
+      const entry = acc[s.type] ?? { sum: 0, n: 0 };
+      entry.sum += point.value;
+      entry.n += 1;
+      acc[s.type] = entry;
+    });
+  const out: Partial<Record<SensorType, number>> = {};
+  (Object.keys(acc) as SensorType[]).forEach((k2) => {
+    out[k2] = acc[k2]!.sum / acc[k2]!.n;
+  });
+  return out;
+}
+
 function averageByType(sensors: Sensor[]): Partial<Record<SensorType, number>> {
   const acc: Partial<Record<SensorType, { sum: number; n: number }>> = {};
   sensors
@@ -167,7 +187,21 @@ export function assessRisk(sensors: Sensor[], previousAlerts = 0): RiskAssessmen
   raw = Math.max(0, Math.min(100, raw));
 
   // O índice é posicionado dentro da faixa do nível combinado.
-  const { level, warn, severe, flags } = combinedLevel(averages);
+  const combined = combinedLevel(averages);
+  let level = combined.level;
+  const { warn, severe, flags } = combined;
+
+  // Crítico exige persistência: a combinação precisa se manter elevada por
+  // vários ciclos seguidos — um pico isolado não escala o nível.
+  if (level === "critico") {
+    const sustained = [1, 2, 3].every((k) => {
+      const past = averagesAtOffset(sensors, k);
+      if (!Object.keys(past).length) return true;
+      const l = combinedLevel(past).level;
+      return l === "alto" || l === "critico";
+    });
+    if (!sustained) level = "alto";
+  }
   const [lo, hi] = BANDS[level];
   const score = Math.max(lo, Math.min(hi, lo + (hi - lo) * Math.min(1, raw / 100 + severe * 0.12)));
 

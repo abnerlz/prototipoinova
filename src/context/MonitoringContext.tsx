@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { toast } from "sonner";
 
 import { MUNICIPALITIES, NEIGHBORHOODS, getNeighborhood } from "@/data/regions";
-import { assessRisk } from "@/lib/ai";
+import { RISK_LABEL, assessRisk } from "@/lib/ai";
 import {
   createInitialStates,
   createSensors,
@@ -55,13 +55,26 @@ interface MonitoringContextValue {
   dismissAutoAlert: () => void;
   simulation: SimulationState | null;
   simulationHistory: SimulationRecord[];
+  /** Linha do tempo global de eventos detectados automaticamente. */
+  timeline: TimelineEvent[];
   startSimulation: (input: StartSimulationInput) => void;
   stopSimulation: () => void;
+}
+
+export interface TimelineEvent {
+  id: string;
+  timestamp: number;
+  message: string;
+  level: RiskAssessment["level"];
+  neighborhoodId: string;
+  municipalityId: string;
 }
 
 const MonitoringContext = createContext<MonitoringContextValue | null>(null);
 
 const MAX_HISTORY = 169;
+
+const ORDER: RiskAssessment["level"][] = ["baixo", "moderado", "alto", "critico"];
 
 interface SimRuntime {
   active: boolean;
@@ -97,6 +110,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
   const simRef = useRef<SimRuntime | null>(null);
   const [simulation, setSimulation] = useState<SimulationState | null>(null);
   const [simulationHistory, setSimulationHistory] = useState<SimulationRecord[]>([]);
+  const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
 
   // Cada carregamento gera um conjunto de leituras diferente, dentro da faixa
   // realista — sem divergir da renderização do servidor (roda após a montagem).
@@ -396,6 +410,61 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
     }
   }, [sensors, createAlert]);
 
+  // ---- Linha do tempo automática -----------------------------------------
+  const prevLevels = useRef<Record<string, RiskAssessment["level"]>>({});
+  const prevRain = useRef<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!sensors.length) return;
+    const now = Date.now();
+    const additions: TimelineEvent[] = [];
+
+    NEIGHBORHOODS.forEach((n) => {
+      const scoped = sensors.filter((s) => s.neighborhoodId === n.id && s.status === "online");
+      if (!scoped.length) return;
+      const assessment = assessRisk(scoped);
+      const before = prevLevels.current[n.id];
+      prevLevels.current[n.id] = assessment.level;
+
+      if (before && before !== assessment.level) {
+        const subiu = ORDER.indexOf(assessment.level) > ORDER.indexOf(before);
+        additions.push({
+          id: `${n.id}-lvl-${now}`,
+          timestamp: now,
+          message: `IA ${subiu ? "elevou" : "reduziu"} o risco de ${n.name} para ${RISK_LABEL[assessment.level]} (índice ${assessment.score}).`,
+          level: assessment.level,
+          neighborhoodId: n.id,
+          municipalityId: n.municipalityId,
+        });
+      }
+
+      const rain = scoped.find((s) => s.type === "pluviosidade")?.value ?? 0;
+      const rainBefore = prevRain.current[n.id] ?? rain;
+      prevRain.current[n.id] = rain;
+      if (rainBefore < 12 && rain >= 12) {
+        additions.push({
+          id: `${n.id}-rain-${now}`,
+          timestamp: now,
+          message: `Chuva intensa iniciada em ${n.name} (${rain.toFixed(1)} mm/h).`,
+          level: assessment.level,
+          neighborhoodId: n.id,
+          municipalityId: n.municipalityId,
+        });
+      } else if (rainBefore >= 12 && rain < 4) {
+        additions.push({
+          id: `${n.id}-rain-stop-${now}`,
+          timestamp: now,
+          message: `Chuva cessou em ${n.name}; sensores retornando gradualmente ao normal.`,
+          level: assessment.level,
+          neighborhoodId: n.id,
+          municipalityId: n.municipalityId,
+        });
+      }
+    });
+
+    if (additions.length) setTimeline((prev) => [...additions, ...prev].slice(0, 120));
+  }, [sensors]);
+
   const value = useMemo<MonitoringContextValue>(
     () => ({
       sensors,
@@ -416,6 +485,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       dismissAutoAlert: () => {},
       simulation,
       simulationHistory,
+      timeline,
       startSimulation,
       stopSimulation,
     }),
@@ -433,6 +503,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       riskFor,
       simulation,
       simulationHistory,
+      timeline,
       startSimulation,
       stopSimulation,
     ],
