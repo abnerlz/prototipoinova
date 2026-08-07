@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { AiAnalysisPanel } from "@/components/ai/AiAnalysisPanel";
+import { ForecastPanel } from "@/components/ai/ForecastPanel";
+import { RecommendedActionsPanel } from "@/components/ai/RecommendedActionsPanel";
 import { RiskBadge, RiskGauge } from "@/components/common/RiskGauge";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +35,12 @@ function IaPage() {
   const { filters, sensorsIn, sensors } = useMonitoring();
   const scoped = sensorsIn(filters.municipalityId, filters.neighborhoodId, filters.sensorType);
   const risk = assessRisk(scoped);
+  const scopeLabel =
+    filters.neighborhoodId !== "all"
+      ? (NEIGHBORHOODS.find((n) => n.id === filters.neighborhoodId)?.name ?? "escopo selecionado")
+      : filters.municipalityId !== "all"
+        ? (getMunicipality(filters.municipalityId)?.name ?? "escopo selecionado")
+        : "Região Metropolitana do Recife";
   const ranking = NEIGHBORHOODS.map((n) => ({ n, r: assessRisk(sensors.filter((s) => s.neighborhoodId === n.id)) }))
     .sort((a, b) => b.r.score - a.r.score)
     .slice(0, 8);
@@ -40,6 +49,15 @@ function IaPage() {
     <>
       <h1 className="font-display text-xl font-bold">IA de prevenção</h1>
       <FilterBar />
+      <div className="grid gap-4 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+          <AiAnalysisPanel sensors={scoped} risk={risk} scopeLabel={scopeLabel} />
+        </div>
+        <div className="space-y-4">
+          <ForecastPanel risk={risk} sensors={scoped} />
+          <RecommendedActionsPanel risk={risk} />
+        </div>
+      </div>
       <div className="grid gap-4 xl:grid-cols-3">
         <Card className="glass border-border/60">
           <CardHeader className="pb-2"><CardTitle className="text-base">Previsão do escopo atual</CardTitle></CardHeader>

@@ -160,13 +160,21 @@ export function applyScenario(
     // Rampa suavizada (ease-in-out) + micro-oscilação: a grandeza avança em
     // degraus, com pequenos recuos, como um sensor real em campo.
     const eased = intensity * intensity * (3 - 2 * intensity);
-    const wobble = 1 + Math.sin(progress * 14 + phase.start * 9) * 0.06;
-    const target = Math.max(base, phase.target * jitter) * wobble;
+    // Oscilação natural: respiração lenta + micro-ondulação rápida. Produz
+    // subidas, pequenos recuos e patamares — nunca uma rampa contínua.
+    const breath =
+      1 +
+      Math.sin(progress * 9 + phase.start * 7) * 0.05 +
+      Math.sin(progress * 31 + phase.start * 3) * 0.025;
+    const target = Math.max(base, phase.target * jitter) * breath;
     const desired = lerp(base, target, eased);
 
-    // Aproximação gradual do alvo — pode subir ou cair conforme a fase evolui.
-    const rate = 0.35 + eased * 0.25;
-    (next[field] as number) = Math.max(0, current + (desired - current) * rate + noise(desired * 0.015));
+    // Aproximação gradual e lenta do alvo — pode subir ou cair a cada ciclo.
+    const rate = 0.14 + eased * 0.16;
+    (next[field] as number) = Math.max(
+      0,
+      current + (desired - current) * rate + noise(Math.max(0.02, desired * 0.035)),
+    );
   });
 
   // A temperatura acompanha a chuva (cai quando chove forte).

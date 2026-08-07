@@ -2,9 +2,10 @@ import "leaflet/dist/leaflet.css";
 
 import { useNavigate } from "@tanstack/react-router";
 import L from "leaflet";
-import { useEffect, useMemo } from "react";
-import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from "react-leaflet";
+import { useEffect, useMemo, useState } from "react";
+import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 
+import { NeighborhoodSheet } from "@/components/map/NeighborhoodSheet";
 import { useMonitoring } from "@/context/MonitoringContext";
 import { MUNICIPALITIES, NEIGHBORHOODS, getSensorMeta } from "@/data/regions";
 import { RISK_COLOR, RISK_LABEL, assessRisk } from "@/lib/ai";
@@ -39,6 +40,7 @@ export default function RiskMap({
 }: RiskMapProps) {
   const { sensors } = useMonitoring();
   const navigate = useNavigate();
+  const [selected, setSelected] = useState<string | null>(null);
 
   const level: MapLevel = neighborhoodId ? "bairro" : municipalityId ? "municipio" : "regiao";
 
@@ -128,17 +130,12 @@ export default function RiskMap({
                 weight: 2,
               }}
               eventHandlers={{
-                click: () =>
-                  interactive && navigate({ to: "/bairros/$neighborhoodId", params: { neighborhoodId: neighborhood.id } }),
+                click: () => interactive && setSelected(neighborhood.id),
               }}
             >
-              <Popup>
-                <strong>{neighborhood.name}</strong>
-                <br />
-                Índice: {risk.score} · {RISK_LABEL[risk.level]}
-                <br />
-                {count} sensores
-              </Popup>
+              <Tooltip direction="top" offset={[0, -6]}>
+                {neighborhood.name} · {RISK_LABEL[risk.level]} ({count} sensores)
+              </Tooltip>
             </CircleMarker>
           ))}
 
@@ -167,6 +164,7 @@ export default function RiskMap({
             );
           })}
       </MapContainer>
+      <NeighborhoodSheet neighborhoodId={selected} onOpenChange={(open) => !open && setSelected(null)} />
     </div>
   );
 }

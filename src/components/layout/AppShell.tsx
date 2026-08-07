@@ -11,6 +11,7 @@ import {
   Building2,
   Radio,
   ShieldAlert,
+  Siren,
 } from "lucide-react";
 
 import { EmitAlertButton } from "@/components/alerts/EmitAlertButton";
@@ -28,6 +29,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useMonitoring } from "@/context/MonitoringContext";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { RISK_LABEL } from "@/lib/ai";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +39,7 @@ const NAV = [
   { title: "Localidades", url: "/localidades", icon: Building2 },
   { title: "Sensores", url: "/sensores", icon: Cpu },
   { title: "Alertas", url: "/alertas", icon: AlertTriangle },
+  { title: "Ocorrências", url: "/ocorrencias", icon: Siren },
   { title: "Histórico", url: "/historico", icon: History },
   { title: "Relatórios", url: "/relatorios", icon: FileBarChart },
   { title: "Inteligência Artificial", url: "/ia", icon: BrainCircuit },
@@ -86,6 +89,7 @@ function AppSidebar() {
 
 function TopBar() {
   const { sensors, alerts, riskFor, live, lastTick } = useMonitoring();
+  const hydrated = useHydrated();
   const global = riskFor();
   const online = sensors.filter((s) => s.status === "online").length;
   const active = alerts.filter((a) => a.status === "ativo").length;
@@ -98,7 +102,7 @@ function TopBar() {
           Monitoramento Inteligente de Deslizamentos · RMR
         </p>
         <p className="hidden text-[11px] text-muted-foreground sm:block">
-          Última sincronização {new Date(lastTick).toLocaleTimeString("pt-BR")}
+          Última sincronização {hydrated ? new Date(lastTick).toLocaleTimeString("pt-BR") : "—"}
         </p>
       </div>
       <div className="ml-auto flex items-center gap-2">
