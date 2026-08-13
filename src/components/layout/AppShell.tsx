@@ -42,8 +42,10 @@ const NAV = [
   { title: "Ocorrências", url: "/ocorrencias", icon: Siren },
   { title: "Histórico", url: "/historico", icon: History },
   { title: "Relatórios", url: "/relatorios", icon: FileBarChart },
+  { title: "Central de Inteligência", url: "/central-inteligencia", icon: BrainCircuit },
   { title: "Inteligência Artificial", url: "/ia", icon: BrainCircuit },
   { title: "Apoio à Decisão", url: "/apoio-decisao", icon: ShieldAlert },
+
 ] as const;
 
 function AppSidebar() {
