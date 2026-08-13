@@ -14,6 +14,7 @@ import { Route as OcorrenciasRouteImport } from './routes/ocorrencias'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as IaRouteImport } from './routes/ia'
 import { Route as HistoricoRouteImport } from './routes/historico'
+import { Route as CentralInteligenciaRouteImport } from './routes/central-inteligencia'
 import { Route as ApoioDecisaoRouteImport } from './routes/apoio-decisao'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as IndexRouteImport } from './routes/index'
@@ -49,6 +50,11 @@ const IaRoute = IaRouteImport.update({
 const HistoricoRoute = HistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CentralInteligenciaRoute = CentralInteligenciaRouteImport.update({
+  id: '/central-inteligencia',
+  path: '/central-inteligencia',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApoioDecisaoRoute = ApoioDecisaoRouteImport.update({
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/apoio-decisao': typeof ApoioDecisaoRoute
+  '/central-inteligencia': typeof CentralInteligenciaRoute
   '/historico': typeof HistoricoRoute
   '/ia': typeof IaRoute
   '/mapa': typeof MapaRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/apoio-decisao': typeof ApoioDecisaoRoute
+  '/central-inteligencia': typeof CentralInteligenciaRoute
   '/historico': typeof HistoricoRoute
   '/ia': typeof IaRoute
   '/mapa': typeof MapaRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/apoio-decisao': typeof ApoioDecisaoRoute
+  '/central-inteligencia': typeof CentralInteligenciaRoute
   '/historico': typeof HistoricoRoute
   '/ia': typeof IaRoute
   '/mapa': typeof MapaRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alertas'
     | '/apoio-decisao'
+    | '/central-inteligencia'
     | '/historico'
     | '/ia'
     | '/mapa'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alertas'
     | '/apoio-decisao'
+    | '/central-inteligencia'
     | '/historico'
     | '/ia'
     | '/mapa'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alertas'
     | '/apoio-decisao'
+    | '/central-inteligencia'
     | '/historico'
     | '/ia'
     | '/mapa'
@@ -225,6 +237,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertasRoute: typeof AlertasRoute
   ApoioDecisaoRoute: typeof ApoioDecisaoRoute
+  CentralInteligenciaRoute: typeof CentralInteligenciaRoute
   HistoricoRoute: typeof HistoricoRoute
   IaRoute: typeof IaRoute
   MapaRoute: typeof MapaRoute
@@ -275,6 +288,13 @@ declare module '@tanstack/react-router' {
       path: '/historico'
       fullPath: '/historico'
       preLoaderRoute: typeof HistoricoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/central-inteligencia': {
+      id: '/central-inteligencia'
+      path: '/central-inteligencia'
+      fullPath: '/central-inteligencia'
+      preLoaderRoute: typeof CentralInteligenciaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/apoio-decisao': {
@@ -361,6 +381,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertasRoute: AlertasRoute,
   ApoioDecisaoRoute: ApoioDecisaoRoute,
+  CentralInteligenciaRoute: CentralInteligenciaRoute,
   HistoricoRoute: HistoricoRoute,
   IaRoute: IaRoute,
   MapaRoute: MapaRoute,
