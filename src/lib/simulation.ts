@@ -1,8 +1,8 @@
-import { MUNICIPALITIES, NEIGHBORHOODS, SENSOR_TYPES, getMunicipality } from "@/data/regions";
+import { NEIGHBORHOODS, SENSOR_TYPES, STATION } from "@/data/regions";
 import type { Sensor, SensorReading, SensorType } from "@/types";
 
 /**
- * Simulador físico simplificado (comportamento de sensores reais).
+ * Simulador físico simplificado do Ponto de Monitoramento 01.
  *
  * Cada grandeza persegue um valor de equilíbrio que depende do clima e do
  * terreno, com inércia + ruído. Isso produz séries que sobem, descem e ficam
@@ -13,10 +13,10 @@ export interface EnvState {
   neighborhoodId: string;
   rain: number; // mm/h
   moisture: number; // % (umidade do solo)
+  airHumidity: number; // % (umidade do ar)
   temperature: number; // °C
   vibration: number; // mm/s
   tilt: number; // graus
-  displacement: number; // mm
   stormPhase: number; // 0..1 intensidade do evento de chuva
 }
 
@@ -42,27 +42,26 @@ const hash = (value: string) => {
 export const RANGES = {
   temperature: [22, 33] as const,
   moisture: [30, 100] as const,
+  airHumidity: [40, 100] as const,
   rain: [0, 90] as const,
   vibration: [0, 20] as const,
   tilt: [0, 25] as const,
-  displacement: [0, 60] as const,
 };
 
 export function createEnvState(neighborhoodId: string, susceptibility: number, salt = 0): EnvState {
   const rnd = seeded(hash(neighborhoodId) + salt);
-  // Cada execução começa em um ponto diferente da faixa realista.
-  const stormPhase = rnd() < 0.25 ? rnd() * 0.6 : rnd() * 0.12;
-  const rain = clamp(stormPhase * 48 + rnd() * 2, 0, 80);
-  const moisture = clamp(34 + rain * 0.8 + susceptibility * 14 + (rnd() - 0.5) * 10, 30, 100);
+  const stormPhase = rnd() < 0.25 ? rnd() * 0.5 : rnd() * 0.1;
+  const rain = clamp(stormPhase * 42 + rnd() * 2, 0, 80);
+  const moisture = clamp(34 + rain * 0.8 + susceptibility * 12 + (rnd() - 0.5) * 10, 30, 100);
   const saturation = clamp((moisture - 62) / 38, 0, 1);
   return {
     neighborhoodId,
     rain,
     moisture,
+    airHumidity: clamp(58 + rain * 0.9 + (rnd() - 0.5) * 12, 40, 100),
     temperature: clamp(30 - rain * 0.12 + (rnd() - 0.5) * 4, 22, 33),
-    vibration: clamp(0.4 + saturation * 3 + rnd() * 0.8, 0, 20),
-    tilt: clamp(0.9 + susceptibility * 1.1 + saturation * saturation * 5 + (rnd() - 0.5) * 0.4, 0, 25),
-    displacement: clamp(susceptibility * 3 + saturation ** 1.5 * 22 + rnd() * 2, 0, 60),
+    vibration: clamp(0.4 + saturation * 2.4 + rnd() * 0.7, 0, 20),
+    tilt: clamp(0.9 + susceptibility * 1.1 + saturation * saturation * 4 + (rnd() - 0.5) * 0.4, 0, 25),
     stormPhase,
   };
 }
@@ -78,16 +77,20 @@ export function stepEnv(state: EnvState, susceptibility: number, dt = 0.25): Env
 
   // --- Clima: eventos de chuva que começam, evoluem e passam ---------------
   let stormPhase = state.stormPhase;
-  if (Math.random() < 0.06 * dt) stormPhase = clamp(stormPhase + 0.25 + Math.random() * 0.5, 0, 1);
+  if (Math.random() < 0.05 * dt) stormPhase = clamp(stormPhase + 0.2 + Math.random() * 0.4, 0, 1);
   stormPhase = clamp(stormPhase - stormPhase * 0.22 * dt + jitter(0.02), 0, 1);
 
-  const rainTarget = stormPhase > 0.06 ? stormPhase * 55 : Math.random() < 0.25 ? Math.random() * 1.5 : 0;
+  const rainTarget = stormPhase > 0.06 ? stormPhase * 50 : Math.random() < 0.25 ? Math.random() * 1.5 : 0;
   const rain = clamp(approach(state.rain, rainTarget, 1.6) + jitter(0.7), 0, 90);
 
   // --- Umidade do solo: infiltra rápido, drena devagar ----------------------
-  const moistureEq = clamp(36 + rain * 0.9 + susceptibility * 14, 30, 100);
+  const moistureEq = clamp(36 + rain * 0.9 + susceptibility * 12, 30, 100);
   const rate = moistureEq > state.moisture ? 0.9 : 0.28 * (1 - susceptibility * 0.4);
   const moisture = clamp(approach(state.moisture, moistureEq, rate) + jitter(0.5), 30, 100);
+
+  // --- Umidade do ar: acompanha a chuva, com resposta rápida ---------------
+  const airEq = clamp(58 + rain * 1.1, 40, 99);
+  const airHumidity = clamp(approach(state.airHumidity, airEq, 1.1) + jitter(0.8), 40, 100);
 
   // --- Temperatura: cai na chuva, sobe no tempo seco ------------------------
   const temperature = clamp(approach(state.temperature, rain > 4 ? 23.5 : 30, 0.6) + jitter(0.3), 22, 33);
@@ -98,13 +101,10 @@ export function stepEnv(state: EnvState, susceptibility: number, dt = 0.25): Env
   const tiltEq = clamp(0.9 + susceptibility * 1.1 + saturation * saturation * 6, 0, 25);
   const tilt = clamp(approach(state.tilt, tiltEq, 0.22) + jitter(0.05), 0, 25);
 
-  const displacementEq = clamp(susceptibility * 3 + saturation ** 1.5 * 30, 0, 60);
-  const displacement = clamp(approach(state.displacement, displacementEq, 0.15) + jitter(0.2), 0, 60);
-
-  const vibrationEq = clamp(0.4 + saturation * 4 + displacement * 0.06, 0, 20);
+  const vibrationEq = clamp(0.4 + saturation * 4 + tilt * 0.15, 0, 20);
   const vibration = clamp(approach(state.vibration, vibrationEq, 0.7) + jitter(0.35), 0, 20);
 
-  return { ...state, rain, moisture, temperature, tilt, displacement, vibration, stormPhase };
+  return { ...state, rain, moisture, airHumidity, temperature, tilt, vibration, stormPhase };
 }
 
 export function envValue(state: EnvState, type: SensorType): number {
@@ -113,14 +113,14 @@ export function envValue(state: EnvState, type: SensorType): number {
       return state.rain;
     case "umidade":
       return state.moisture;
+    case "umidade_ar":
+      return state.airHumidity;
     case "temperatura":
       return state.temperature;
     case "vibracao":
       return state.vibration;
     case "inclinacao":
       return state.tilt;
-    case "deslocamento":
-      return state.displacement;
   }
 }
 
@@ -143,41 +143,28 @@ function buildHistory(state: EnvState, susceptibility: number, type: SensorType,
   return readings;
 }
 
+/** Os seis sensores do protótipo, todos pertencentes ao Ponto 01. */
 export function createSensors(states: Record<string, EnvState>, salt = 0): Sensor[] {
-  const sensors: Sensor[] = [];
-  NEIGHBORHOODS.forEach((neighborhood, nIndex) => {
-    const state = states[neighborhood.id];
-    SENSOR_TYPES.forEach((meta, tIndex) => {
-      const rnd = seeded(hash(neighborhood.id + meta.id) + salt);
-      const offline = rnd() > 0.94;
-      const code = `${neighborhood.municipalityId.slice(0, 3).toUpperCase()}-${String(nIndex + 1).padStart(2, "0")}${String(tIndex + 1)}`;
-      sensors.push({
-        id: `${neighborhood.id}-${meta.id}`,
-        code,
-        name: `${meta.label} · ${neighborhood.name}`,
-        type: meta.id,
-        status: offline ? "offline" : rnd() > 0.97 ? "manutencao" : "online",
-        municipalityId: neighborhood.municipalityId,
-        neighborhoodId: neighborhood.id,
-        position: {
-          lat: neighborhood.center.lat + (rnd() - 0.5) * 0.006,
-          lng: neighborhood.center.lng + (rnd() - 0.5) * 0.006,
-        },
-        battery: Math.round(45 + rnd() * 55),
-        signal: Math.round(35 + rnd() * 65),
-        value: Number(envValue(state, meta.id).toFixed(2)),
-        unit: meta.unit,
-        lastUpdate: Date.now(),
-        history: buildHistory(
-          state,
-          neighborhood.susceptibility,
-          meta.id,
-          hash(neighborhood.id + meta.id) + salt,
-        ),
-      });
-    });
+  const state = states[STATION.id];
+  return SENSOR_TYPES.map((meta, index) => {
+    const rnd = seeded(hash(STATION.id + meta.id) + salt);
+    return {
+      id: `${STATION.id}-${meta.id}`,
+      code: `PM01-S${String(index + 1).padStart(2, "0")}`,
+      name: meta.label,
+      type: meta.id,
+      status: "online" as const,
+      municipalityId: STATION.municipalityId,
+      neighborhoodId: STATION.id,
+      position: { lat: STATION.center.lat, lng: STATION.center.lng },
+      battery: Math.round(70 + rnd() * 30),
+      signal: Math.round(70 + rnd() * 30),
+      value: Number(envValue(state, meta.id).toFixed(2)),
+      unit: meta.unit,
+      lastUpdate: Date.now(),
+      history: buildHistory(state, STATION.susceptibility, meta.id, hash(STATION.id + meta.id) + salt),
+    };
   });
-  return sensors;
 }
 
 export function createInitialStates(salt = 0): Record<string, EnvState> {
@@ -188,5 +175,5 @@ export function createInitialStates(salt = 0): Record<string, EnvState> {
   return states;
 }
 
-export const MUNICIPALITY_COUNT = MUNICIPALITIES.length;
-export const municipalityName = (id: string) => getMunicipality(id)?.name ?? id;
+export const MUNICIPALITY_COUNT = 1;
+export const municipalityName = () => "Recife";
