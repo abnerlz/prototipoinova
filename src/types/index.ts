@@ -5,10 +5,11 @@
 export type SensorType =
   | "pluviosidade"
   | "umidade"
+  | "umidade_ar"
   | "temperatura"
-  | "vibracao"
   | "inclinacao"
-  | "deslocamento";
+  | "vibracao";
+
 
 export type SensorStatus = "online" | "offline" | "manutencao";
 
