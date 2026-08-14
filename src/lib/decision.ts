@@ -81,7 +81,7 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   const { sensors, risk, alerts, scopeLabel, households } = input;
   const rain = rainfall24h(sensors);
   const humidity = avg(sensors, "umidade");
-  const displacement = avg(sensors, "deslocamento");
+  const airHumidity = avg(sensors, "umidade_ar");
   const tilt = avg(sensors, "inclinacao");
   const vibration = avg(sensors, "vibracao");
   const offline = sensors.filter((s) => s.status !== "online").length;
@@ -97,7 +97,7 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
     fact(rain >= 40, `volume de chuva de ${rain} mm nas últimas 24 horas`),
     fact(rain > 0 && rain < 40, `chuva acumulada de ${rain} mm nas últimas 24 horas`),
     humidity !== undefined ? `umidade do solo em ${humidity.toFixed(0)}%` : "",
-    displacement !== undefined ? `deslocamento de ${displacement.toFixed(1)} mm` : "",
+    airHumidity !== undefined ? `umidade do ar em ${airHumidity.toFixed(0)}%` : "",
   ].filter(Boolean);
   const context = facts.join(", ");
 
@@ -121,12 +121,12 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   }
 
   // Vistoria em campo.
-  if (risk.score >= 35 || (displacement !== undefined && displacement >= 16) || (tilt !== undefined && tilt >= 4)) {
+  if (risk.score >= 35 || (tilt !== undefined && tilt >= 4)) {
     recs.push({
       id: "vistoria",
       action: "Enviar equipe para vistoria técnica",
       priority: risk.level === "critico" ? "alta" : risk.level === "alto" ? "alta" : "moderada",
-      rationale: `Sinais de movimentação do solo em ${scopeLabel}${tilt !== undefined ? ` (inclinação ${tilt.toFixed(1)}°)` : ""}${displacement !== undefined ? ` e deslocamento de ${displacement.toFixed(1)} mm` : ""}. Vistoria presencial confirma trincas, surgências e estabilidade das encostas.`,
+      rationale: `Sinais de movimentação do solo em ${scopeLabel}${tilt !== undefined ? ` (inclinação ${tilt.toFixed(1)}°)` : ""}. Vistoria presencial confirma trincas, surgências e estabilidade das encostas.`,
       deadline: risk.score >= 35 ? "12h" : "48h",
     });
   }
@@ -143,12 +143,12 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   }
 
   // Interdição temporária.
-  if (risk.level === "critico" || (risk.level === "alto" && (displacement ?? 0) >= 28)) {
+  if (risk.level === "critico" || (risk.level === "alto" && (tilt ?? 0) >= 9)) {
     recs.push({
       id: "interdicao",
       action: "Recomendar interdição temporária de vias e imóveis em encosta",
       priority: risk.level === "critico" ? "critica" : "alta",
-      rationale: `Combinação de saturação do solo${humidity !== undefined ? ` (${humidity.toFixed(0)}%)` : ""} e deslocamento acelerado indica perda de estabilidade. Restringir circulação nas cotas mais altas reduz exposição imediata.`,
+      rationale: `Combinação de saturação do solo${humidity !== undefined ? ` (${humidity.toFixed(0)}%)` : ""} e inclinação crescente indica perda de estabilidade. Restringir circulação nas cotas mais altas reduz exposição imediata.`,
       deadline: "Imediato",
     });
   }

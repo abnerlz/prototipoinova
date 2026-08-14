@@ -47,14 +47,6 @@ const FULL_CHAIN: PhaseSpec[] = [
     message: "Pequena inclinação detectada nos inclinômetros da encosta.",
   },
   {
-    key: "deslocamento",
-    start: 0.58,
-    ramp: 0.22,
-    target: 44,
-    label: "Deslocamento",
-    message: "Movimento inicial da encosta registrado pelos extensômetros.",
-  },
-  {
     key: "vibracao",
     start: 0.76,
     ramp: 0.2,
@@ -96,16 +88,16 @@ export const SCENARIOS: Record<
   vibracao: {
     label: "Vibração Excessiva",
     description: "Vibrações crescentes associadas a pequenos movimentos do talude.",
-    phases: rescale(pick(["vibracao", "deslocamento"])),
+    phases: rescale(pick(["vibracao", "inclinacao"])),
   },
   movimento: {
     label: "Movimento da Encosta",
-    description: "Inclinação e deslocamento evoluindo até ruptura iminente.",
-    phases: rescale(pick(["inclinacao", "deslocamento", "vibracao"])),
+    description: "Inclinação e vibração evoluindo até instabilidade iminente.",
+    phases: rescale(pick(["inclinacao", "vibracao"])),
   },
   completa: {
     label: "Simulação Completa",
-    description: "Cadeia completa: chuva → umidade → inclinação → deslocamento → vibração.",
+    description: "Cadeia completa: chuva → umidade do solo → inclinação → vibração.",
     phases: FULL_CHAIN,
   },
 };
@@ -133,7 +125,7 @@ const FIELD: Record<SensorType, keyof EnvState> = {
   temperatura: "temperature",
   vibracao: "vibration",
   inclinacao: "tilt",
-  deslocamento: "displacement",
+  umidade_ar: "airHumidity",
 };
 
 /**
