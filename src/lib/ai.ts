@@ -21,10 +21,10 @@ const norm = (value: number, min: number, max: number) =>
 const MODEL: Weightings[] = [
   { type: "pluviosidade", weight: 0.22, normalize: (v) => norm(v, 2, 60) },
   { type: "umidade", weight: 0.24, normalize: (v) => norm(v, 45, 95) },
-  { type: "deslocamento", weight: 0.2, normalize: (v) => norm(v, 5, 45) },
-  { type: "inclinacao", weight: 0.16, normalize: (v) => norm(v, 3, 18) },
-  { type: "vibracao", weight: 0.12, normalize: (v) => norm(v, 1, 12) },
-  { type: "temperatura", weight: 0.06, normalize: (v) => 1 - norm(v, 20, 36) },
+  { type: "inclinacao", weight: 0.26, normalize: (v) => norm(v, 3, 18) },
+  { type: "vibracao", weight: 0.2, normalize: (v) => norm(v, 1, 12) },
+  { type: "umidade_ar", weight: 0.05, normalize: (v) => norm(v, 60, 98) },
+  { type: "temperatura", weight: 0.03, normalize: (v) => 1 - norm(v, 20, 36) },
 ];
 
 export function riskLevelFromScore(score: number): RiskLevel {
@@ -94,7 +94,7 @@ function averageByType(sensors: Sensor[]): Partial<Record<SensorType, number>> {
 
 /** Tendência média das últimas 6 horas (positiva = agravamento). */
 function trendFactor(sensors: Sensor[]): number {
-  const relevant = sensors.filter((s) => s.type === "deslocamento" || s.type === "umidade");
+  const relevant = sensors.filter((s) => s.type === "inclinacao" || s.type === "umidade");
   if (!relevant.length) return 0;
   const deltas = relevant.map((s) => {
     const h = s.history;
@@ -114,7 +114,6 @@ const THRESHOLDS: Partial<Record<SensorType, { warn: number; severe: number }>> 
   pluviosidade: { warn: 14, severe: 34 },
   umidade: { warn: 74, severe: 88 },
   inclinacao: { warn: 4, severe: 9 },
-  deslocamento: { warn: 16, severe: 30 },
   vibracao: { warn: 5, severe: 9 },
 };
 
@@ -218,9 +217,9 @@ export function assessRisk(sensors: Sensor[], previousAlerts = 0): RiskAssessmen
     reasons.push(`${c.label} em ${c.value} ${c.unit} (peso ${c.weight} no índice combinado).`);
   });
   if (trend > 0.05) {
-    reasons.push("Tendência de agravamento nas últimas 6 horas (umidade e deslocamento em alta).");
+    reasons.push("Tendência de agravamento nas últimas 6 horas (umidade do solo e inclinação em alta).");
   } else if (trend < -0.05) {
-    reasons.push("Tendência de estabilização: umidade e deslocamento em queda nas últimas 6 horas.");
+    reasons.push("Tendência de estabilização: umidade do solo e inclinação em queda nas últimas 6 horas.");
   } else {
     reasons.push("Leituras estáveis, com oscilações dentro do esperado para o período.");
   }

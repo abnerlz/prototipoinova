@@ -164,7 +164,6 @@ export function explainClassification(risk: RiskAssessment, sensors: Sensor[]): 
   const rain = byType("pluviosidade");
   const moisture = byType("umidade");
   const tilt = byType("inclinacao");
-  const disp = byType("deslocamento");
   const vib = byType("vibracao");
 
   const push = (value: number | undefined, type: SensorType, warn: number, text: string) => {
@@ -173,7 +172,7 @@ export function explainClassification(risk: RiskAssessment, sensors: Sensor[]): 
   push(rain, "pluviosidade", 14, "chuva acumulada acima do normal");
   push(moisture, "umidade", 74, "umidade do solo elevada");
   push(tilt, "inclinacao", 4, "inclinação do terreno crescente");
-  push(disp, "deslocamento", 16, "deslocamento do maciço detectado");
+  push(byType("umidade_ar"), "umidade_ar", 90, "umidade do ar saturada");
   push(vib, "vibracao", 5, "vibração acima do padrão");
 
   if (!parts.length) {
