@@ -31,6 +31,7 @@ import { Route as ApiPublicSensoresRouteImport } from './routes/api/public/senso
 import { Route as ApiSensoresSensorIdLatestRouteImport } from './routes/api/sensores.$sensorId.latest'
 import { Route as ApiSensoresSensorIdHistoryRouteImport } from './routes/api/sensores.$sensorId.history'
 import { Route as ApiPublicSensoresSensorIdLatestRouteImport } from './routes/api/public/sensores.$sensorId.latest'
+import { Route as ApiPublicSensoresSensorIdHistoryRouteImport } from './routes/api/public/sensores.$sensorId.history'
 
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
@@ -147,6 +148,12 @@ const ApiPublicSensoresSensorIdLatestRoute =
     path: '/$sensorId/latest',
     getParentRoute: () => ApiPublicSensoresRoute,
   } as any)
+const ApiPublicSensoresSensorIdHistoryRoute =
+  ApiPublicSensoresSensorIdHistoryRouteImport.update({
+    id: '/$sensorId/history',
+    path: '/$sensorId/history',
+    getParentRoute: () => ApiPublicSensoresRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/api/public/sensores': typeof ApiPublicSensoresRouteWithChildren
   '/api/sensores/$sensorId/history': typeof ApiSensoresSensorIdHistoryRoute
   '/api/sensores/$sensorId/latest': typeof ApiSensoresSensorIdLatestRoute
+  '/api/public/sensores/$sensorId/history': typeof ApiPublicSensoresSensorIdHistoryRoute
   '/api/public/sensores/$sensorId/latest': typeof ApiPublicSensoresSensorIdLatestRoute
 }
 export interface FileRoutesByTo {
@@ -194,6 +202,7 @@ export interface FileRoutesByTo {
   '/api/public/sensores': typeof ApiPublicSensoresRouteWithChildren
   '/api/sensores/$sensorId/history': typeof ApiSensoresSensorIdHistoryRoute
   '/api/sensores/$sensorId/latest': typeof ApiSensoresSensorIdLatestRoute
+  '/api/public/sensores/$sensorId/history': typeof ApiPublicSensoresSensorIdHistoryRoute
   '/api/public/sensores/$sensorId/latest': typeof ApiPublicSensoresSensorIdLatestRoute
 }
 export interface FileRoutesById {
@@ -219,6 +228,7 @@ export interface FileRoutesById {
   '/api/public/sensores': typeof ApiPublicSensoresRouteWithChildren
   '/api/sensores/$sensorId/history': typeof ApiSensoresSensorIdHistoryRoute
   '/api/sensores/$sensorId/latest': typeof ApiSensoresSensorIdLatestRoute
+  '/api/public/sensores/$sensorId/history': typeof ApiPublicSensoresSensorIdHistoryRoute
   '/api/public/sensores/$sensorId/latest': typeof ApiPublicSensoresSensorIdLatestRoute
 }
 export interface FileRouteTypes {
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/api/public/sensores'
     | '/api/sensores/$sensorId/history'
     | '/api/sensores/$sensorId/latest'
+    | '/api/public/sensores/$sensorId/history'
     | '/api/public/sensores/$sensorId/latest'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -269,6 +280,7 @@ export interface FileRouteTypes {
     | '/api/public/sensores'
     | '/api/sensores/$sensorId/history'
     | '/api/sensores/$sensorId/latest'
+    | '/api/public/sensores/$sensorId/history'
     | '/api/public/sensores/$sensorId/latest'
   id:
     | '__root__'
@@ -293,6 +305,7 @@ export interface FileRouteTypes {
     | '/api/public/sensores'
     | '/api/sensores/$sensorId/history'
     | '/api/sensores/$sensorId/latest'
+    | '/api/public/sensores/$sensorId/history'
     | '/api/public/sensores/$sensorId/latest'
   fileRoutesById: FileRoutesById
 }
@@ -474,6 +487,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSensoresSensorIdLatestRouteImport
       parentRoute: typeof ApiPublicSensoresRoute
     }
+    '/api/public/sensores/$sensorId/history': {
+      id: '/api/public/sensores/$sensorId/history'
+      path: '/$sensorId/history'
+      fullPath: '/api/public/sensores/$sensorId/history'
+      preLoaderRoute: typeof ApiPublicSensoresSensorIdHistoryRouteImport
+      parentRoute: typeof ApiPublicSensoresRoute
+    }
   }
 }
 
@@ -492,10 +512,12 @@ const ApiSensoresRouteWithChildren = ApiSensoresRoute._addFileChildren(
 )
 
 interface ApiPublicSensoresRouteChildren {
+  ApiPublicSensoresSensorIdHistoryRoute: typeof ApiPublicSensoresSensorIdHistoryRoute
   ApiPublicSensoresSensorIdLatestRoute: typeof ApiPublicSensoresSensorIdLatestRoute
 }
 
 const ApiPublicSensoresRouteChildren: ApiPublicSensoresRouteChildren = {
+  ApiPublicSensoresSensorIdHistoryRoute: ApiPublicSensoresSensorIdHistoryRoute,
   ApiPublicSensoresSensorIdLatestRoute: ApiPublicSensoresSensorIdLatestRoute,
 }
 
