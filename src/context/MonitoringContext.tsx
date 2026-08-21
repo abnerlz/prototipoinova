@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 import { toast } from "sonner";
 
 import { MUNICIPALITIES, NEIGHBORHOODS, getNeighborhood } from "@/data/regions";
+import { supabase } from "@/integrations/supabase/client";
+import { DEFAULT_SENSOR_ID, computeStatus, type LocalStatus } from "@/lib/sensor-api";
+import { sensorsFromReadings, type RealReading } from "@/lib/real-data";
 import { RISK_LABEL, assessRisk } from "@/lib/ai";
 import {
   createInitialStates,
@@ -37,8 +40,18 @@ interface StartSimulationInput {
   neighborhoodId: string;
 }
 
+export type OperationMode = "real" | "simulacao";
+
 interface MonitoringContextValue {
   sensors: Sensor[];
+  /** MODO REAL usa apenas leituras vindas da API; MODO SIMULAÇÃO gera dados fictícios. */
+  mode: OperationMode;
+  setMode: (mode: OperationMode) => void;
+  /** Leituras reais recebidas do protótipo (mais recente primeiro). */
+  realReadings: RealReading[];
+  awaitingRealData: boolean;
+  realStatus: LocalStatus | null;
+  lastRealUpdate: number | null;
   alerts: Alert[];
   filters: Filters;
   live: boolean;
@@ -95,7 +108,14 @@ interface SimRuntime {
 
 export function MonitoringProvider({ children }: { children: ReactNode }) {
   const statesRef = useRef<Record<string, EnvState>>(createInitialStates());
-  const [sensors, setSensors] = useState<Sensor[]>(() => createSensors(statesRef.current));
+  const [simSensors, setSensors] = useState<Sensor[]>(() => createSensors(statesRef.current));
+  const [mode, setMode] = useState<OperationMode>("real");
+  const [realReadings, setRealReadings] = useState<RealReading[]>([]);
+  const realSensors = useMemo(() => sensorsFromReadings(realReadings), [realReadings]);
+  const sensors = mode === "real" ? realSensors : simSensors;
+  const latestReal = realReadings[0] ?? null;
+  const realStatus = latestReal ? computeStatus(latestReal).status : null;
+  const lastRealUpdate = latestReal ? new Date(latestReal.created_at).getTime() : null;
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [filters, setFiltersState] = useState<Filters>({
     municipalityId: "all",
@@ -119,6 +139,31 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
     statesRef.current = createInitialStates(salt);
     setSensors(createSensors(statesRef.current, salt));
   }, []);
+
+  // ---- MODO REAL: busca as leituras gravadas pelo protótipo (ESP32) --------
+  useEffect(() => {
+    if (mode !== "real") return;
+    let cancelled = false;
+
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("sensor_readings")
+        .select("*")
+        .eq("sensor_id", DEFAULT_SENSOR_ID)
+        .order("created_at", { ascending: false })
+        .limit(300);
+      if (cancelled || error || !data) return;
+      setRealReadings(data as RealReading[]);
+      setLastTick(Date.now());
+    };
+
+    void load();
+    const id = window.setInterval(() => void load(), 5000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [mode]);
 
   const setFilters = useCallback((patch: Partial<Filters>) => {
     setFiltersState((prev) => {
@@ -154,7 +199,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
 
   // Loop de simulação/monitoramento em tempo real.
   useEffect(() => {
-    if (!live) return;
+    if (!live || mode === "real") return;
     const id = window.setInterval(() => {
       const now = Date.now();
       const sim = simRef.current;
@@ -223,7 +268,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       }
     }, intervalMs);
     return () => window.clearInterval(id);
-  }, [live, intervalMs, pushEvent]);
+  }, [live, intervalMs, mode, pushEvent]);
 
   const sensorsRef = useRef<Sensor[]>(sensors);
   useEffect(() => {
@@ -259,6 +304,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
 
   const startSimulation = useCallback<MonitoringContextValue["startSimulation"]>((input) => {
     if (simRef.current?.active) return;
+    setMode("simulacao");
     const now = Date.now();
     simRef.current = {
       active: true,
@@ -468,6 +514,12 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
   const value = useMemo<MonitoringContextValue>(
     () => ({
       sensors,
+      mode,
+      setMode,
+      realReadings,
+      awaitingRealData: mode === "real" && realReadings.length === 0,
+      realStatus,
+      lastRealUpdate,
       alerts,
       filters,
       live,
@@ -491,6 +543,10 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
     }),
     [
       sensors,
+      mode,
+      realReadings,
+      realStatus,
+      lastRealUpdate,
       alerts,
       filters,
       live,
