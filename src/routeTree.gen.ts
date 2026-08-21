@@ -26,6 +26,7 @@ import { Route as SensoresSensorIdRouteImport } from './routes/sensores.$sensorI
 import { Route as MunicipiosMunicipalityIdRouteImport } from './routes/municipios.$municipalityId'
 import { Route as LocalidadesNeighborhoodIdRouteImport } from './routes/localidades.$neighborhoodId'
 import { Route as BairrosNeighborhoodIdRouteImport } from './routes/bairros.$neighborhoodId'
+import { Route as ApiSensoresRouteImport } from './routes/api/sensores'
 
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
@@ -114,6 +115,11 @@ const BairrosNeighborhoodIdRoute = BairrosNeighborhoodIdRouteImport.update({
   path: '/bairros/$neighborhoodId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSensoresRoute = ApiSensoresRouteImport.update({
+  id: '/api/sensores',
+  path: '/api/sensores',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/mapa': typeof MapaRoute
   '/ocorrencias': typeof OcorrenciasRoute
   '/relatorios': typeof RelatoriosRoute
+  '/api/sensores': typeof ApiSensoresRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/localidades/$neighborhoodId': typeof LocalidadesNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/mapa': typeof MapaRoute
   '/ocorrencias': typeof OcorrenciasRoute
   '/relatorios': typeof RelatoriosRoute
+  '/api/sensores': typeof ApiSensoresRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/localidades/$neighborhoodId': typeof LocalidadesNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/mapa': typeof MapaRoute
   '/ocorrencias': typeof OcorrenciasRoute
   '/relatorios': typeof RelatoriosRoute
+  '/api/sensores': typeof ApiSensoresRoute
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/localidades/$neighborhoodId': typeof LocalidadesNeighborhoodIdRoute
   '/municipios/$municipalityId': typeof MunicipiosMunicipalityIdRoute
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/ocorrencias'
     | '/relatorios'
+    | '/api/sensores'
     | '/bairros/$neighborhoodId'
     | '/localidades/$neighborhoodId'
     | '/municipios/$municipalityId'
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/ocorrencias'
     | '/relatorios'
+    | '/api/sensores'
     | '/bairros/$neighborhoodId'
     | '/localidades/$neighborhoodId'
     | '/municipios/$municipalityId'
@@ -223,6 +234,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/ocorrencias'
     | '/relatorios'
+    | '/api/sensores'
     | '/bairros/$neighborhoodId'
     | '/localidades/$neighborhoodId'
     | '/municipios/$municipalityId'
@@ -243,6 +255,7 @@ export interface RootRouteChildren {
   MapaRoute: typeof MapaRoute
   OcorrenciasRoute: typeof OcorrenciasRoute
   RelatoriosRoute: typeof RelatoriosRoute
+  ApiSensoresRoute: typeof ApiSensoresRoute
   BairrosNeighborhoodIdRoute: typeof BairrosNeighborhoodIdRoute
   LocalidadesNeighborhoodIdRoute: typeof LocalidadesNeighborhoodIdRoute
   MunicipiosMunicipalityIdRoute: typeof MunicipiosMunicipalityIdRoute
@@ -374,6 +387,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BairrosNeighborhoodIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/sensores': {
+      id: '/api/sensores'
+      path: '/api/sensores'
+      fullPath: '/api/sensores'
+      preLoaderRoute: typeof ApiSensoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -387,6 +407,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapaRoute: MapaRoute,
   OcorrenciasRoute: OcorrenciasRoute,
   RelatoriosRoute: RelatoriosRoute,
+  ApiSensoresRoute: ApiSensoresRoute,
   BairrosNeighborhoodIdRoute: BairrosNeighborhoodIdRoute,
   LocalidadesNeighborhoodIdRoute: LocalidadesNeighborhoodIdRoute,
   MunicipiosMunicipalityIdRoute: MunicipiosMunicipalityIdRoute,
