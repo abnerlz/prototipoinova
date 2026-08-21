@@ -14,7 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      sensor_readings: {
+        Row: {
+          chuva: number | null
+          created_at: string
+          id: string
+          inclinacao: number | null
+          sensor_id: string
+          temperatura: number | null
+          umidade_ar: number | null
+          umidade_solo: number | null
+          vibracao: number | null
+        }
+        Insert: {
+          chuva?: number | null
+          created_at?: string
+          id?: string
+          inclinacao?: number | null
+          sensor_id?: string
+          temperatura?: number | null
+          umidade_ar?: number | null
+          umidade_solo?: number | null
+          vibracao?: number | null
+        }
+        Update: {
+          chuva?: number | null
+          created_at?: string
+          id?: string
+          inclinacao?: number | null
+          sensor_id?: string
+          temperatura?: number | null
+          umidade_ar?: number | null
+          umidade_solo?: number | null
+          vibracao?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
