@@ -27,6 +27,7 @@ import { Route as MunicipiosMunicipalityIdRouteImport } from './routes/municipio
 import { Route as LocalidadesNeighborhoodIdRouteImport } from './routes/localidades.$neighborhoodId'
 import { Route as BairrosNeighborhoodIdRouteImport } from './routes/bairros.$neighborhoodId'
 import { Route as ApiSensoresRouteImport } from './routes/api/sensores'
+import { Route as ApiPublicSensoresRouteImport } from './routes/api/public/sensores'
 import { Route as ApiSensoresSensorIdLatestRouteImport } from './routes/api/sensores.$sensorId.latest'
 import { Route as ApiSensoresSensorIdHistoryRouteImport } from './routes/api/sensores.$sensorId.history'
 
@@ -122,6 +123,11 @@ const ApiSensoresRoute = ApiSensoresRouteImport.update({
   path: '/api/sensores',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSensoresRoute = ApiPublicSensoresRouteImport.update({
+  id: '/api/public/sensores',
+  path: '/api/public/sensores',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSensoresSensorIdLatestRoute =
   ApiSensoresSensorIdLatestRouteImport.update({
     id: '/$sensorId/latest',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/localidades/': typeof LocalidadesIndexRoute
   '/municipios/': typeof MunicipiosIndexRoute
   '/sensores/': typeof SensoresIndexRoute
+  '/api/public/sensores': typeof ApiPublicSensoresRoute
   '/api/sensores/$sensorId/history': typeof ApiSensoresSensorIdHistoryRoute
   '/api/sensores/$sensorId/latest': typeof ApiSensoresSensorIdLatestRoute
 }
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/localidades': typeof LocalidadesIndexRoute
   '/municipios': typeof MunicipiosIndexRoute
   '/sensores': typeof SensoresIndexRoute
+  '/api/public/sensores': typeof ApiPublicSensoresRoute
   '/api/sensores/$sensorId/history': typeof ApiSensoresSensorIdHistoryRoute
   '/api/sensores/$sensorId/latest': typeof ApiSensoresSensorIdLatestRoute
 }
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/localidades/': typeof LocalidadesIndexRoute
   '/municipios/': typeof MunicipiosIndexRoute
   '/sensores/': typeof SensoresIndexRoute
+  '/api/public/sensores': typeof ApiPublicSensoresRoute
   '/api/sensores/$sensorId/history': typeof ApiSensoresSensorIdHistoryRoute
   '/api/sensores/$sensorId/latest': typeof ApiSensoresSensorIdLatestRoute
 }
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/localidades/'
     | '/municipios/'
     | '/sensores/'
+    | '/api/public/sensores'
     | '/api/sensores/$sensorId/history'
     | '/api/sensores/$sensorId/latest'
   fileRoutesByTo: FileRoutesByTo
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/localidades'
     | '/municipios'
     | '/sensores'
+    | '/api/public/sensores'
     | '/api/sensores/$sensorId/history'
     | '/api/sensores/$sensorId/latest'
   id:
@@ -267,6 +278,7 @@ export interface FileRouteTypes {
     | '/localidades/'
     | '/municipios/'
     | '/sensores/'
+    | '/api/public/sensores'
     | '/api/sensores/$sensorId/history'
     | '/api/sensores/$sensorId/latest'
   fileRoutesById: FileRoutesById
@@ -290,6 +302,7 @@ export interface RootRouteChildren {
   LocalidadesIndexRoute: typeof LocalidadesIndexRoute
   MunicipiosIndexRoute: typeof MunicipiosIndexRoute
   SensoresIndexRoute: typeof SensoresIndexRoute
+  ApiPublicSensoresRoute: typeof ApiPublicSensoresRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -420,6 +433,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSensoresRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sensores': {
+      id: '/api/public/sensores'
+      path: '/api/public/sensores'
+      fullPath: '/api/public/sensores'
+      preLoaderRoute: typeof ApiPublicSensoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sensores/$sensorId/latest': {
       id: '/api/sensores/$sensorId/latest'
       path: '/$sensorId/latest'
@@ -470,6 +490,7 @@ const rootRouteChildren: RootRouteChildren = {
   LocalidadesIndexRoute: LocalidadesIndexRoute,
   MunicipiosIndexRoute: MunicipiosIndexRoute,
   SensoresIndexRoute: SensoresIndexRoute,
+  ApiPublicSensoresRoute: ApiPublicSensoresRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
