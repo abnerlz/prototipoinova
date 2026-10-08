@@ -1,18 +1,5 @@
 # Sentinel System
 
-Desenvolva um sistema web completo de monitoramento inteligente de deslizamentos de terra
-
-Desenvolva um sistema web moderno, responsivo e profissional para monitoramento e prevenção de deslizamentos de terra na Região Metropolitana do Recife.
-
-O sistema deverá possuir aparência semelhante aos Centros de Operações da Defesa Civil, com interface moderna, intuitiva, tema escuro, animações suaves, gráficos interativos e atualização em tempo real.
-
-Utilize React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Leaflet (ou MapLibre), Recharts, Framer Motion e arquitetura modular.
-
-Objetivo
-
-O sistema deverá monitorar sensores instalados em áreas de risco e utilizar Inteligência Artificial para prever possíveis deslizamentos antes que aconteçam.
-
-Toda a aplicação deverá funcionar em tempo real utilizando dados simulados inicialmente, mas preparada para integração futura com ESP32, Arduino, APIs IoT e banco de dados.
 
 Estrutura do Sistema
 
