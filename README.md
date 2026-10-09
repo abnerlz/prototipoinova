@@ -1,447 +1,134 @@
-# Sentinel System
-
-
-Estrutura do Sistema
-
-Criar as seguintes páginas:
-
-Dashboard
-
-Mapa
-
-Municípios
-
-Bairros
-
-Sensores
-
-Alertas
-
-Histórico
-
-Relatórios
-
-Inteligência Artificial
-
-Configurações
-
-Dashboard
-
-Não utilizar apenas gráficos gerais.
-
-O Dashboard deverá funcionar por níveis:
-
-Região Metropolitana
-
-↓
-
-Município
-
-↓
-
-Bairro
-
-↓
-
-Sensor
-
-Na parte superior criar filtros para:
-
-Município
-
-Bairro
-
-Período
-
-Tipo de Sensor
-
-Sempre que qualquer filtro for alterado todo o Dashboard deverá atualizar automaticamente.
-
-Dashboard Geral
-
-Exibir:
-
-Índice Geral de Risco
-
-Municípios Monitorados
-
-Sensores Online
-
-Sensores Offline
-
-Quantidade de Alertas
-
-Regiões em Alerta
-
-Status da IA
-
-Previsão das próximas 24 horas
-
-Dashboard do Município
-
-Quando o usuário selecionar Recife, por exemplo, mostrar apenas informações de Recife.
-
-Mostrar:
-
-Índice de Risco
-
-Mapa de Recife
-
-Quantidade de Sensores
-
-Alertas
-
-Bairro mais crítico
-
-Total de ocorrências
-
-Todos os gráficos deverão utilizar apenas dados daquele município.
-
-O mesmo deverá acontecer para:
-
-Olinda
-
-Paulista
-
-Jaboatão dos Guararapes
-
-Camaragibe
-
-Abreu e Lima
-
-Igarassu
-
-São Lourenço da Mata
-
-Moreno
-
-Cabo de Santo Agostinho
-
-Dashboard do Bairro
-
-Ao clicar em um bairro abrir um Dashboard exclusivo.
-
-Exibir:
-
-Mapa do bairro
-
-Índice de risco
-
-Quantidade de sensores
-
-Últimos alertas
-
-Histórico
-
-Todos os gráficos daquele bairro
-
-Sensores instalados
-
-Previsão da IA
-
-Dashboard do Sensor
-
-Ao clicar em qualquer sensor abrir uma página contendo:
-
-Nome
-
-ID
-
-Localização GPS
-
-Município
-
-Bairro
-
-Status
-
-Bateria
-
-Última atualização
-
-Intensidade do sinal
-
-Todos os valores em tempo real
-
-Sensores
-
-O sistema deverá utilizar seis sensores.
-
-Sensor de Pluviosidade
-
-Sensor de Umidade do Solo
-
-Sensor de Temperatura
-
-Sensor de Vibração
-
-Sensor de Inclinação do Terreno
-
-Sensor de Deslocamento do Solo
-
-Cada sensor deverá possuir:
-
-Status
-
-Gráfico
-
-Última leitura
-
-Bateria
-
-Sinal
-
-Localização
-
-Histórico
-
-Inteligência Artificial
-
-Criar um módulo chamado IA de Prevenção de Deslizamentos.
-
-A IA deverá analisar simultaneamente:
-
-Pluviosidade
-
-Umidade do Solo
-
-Temperatura
-
-Vibração
-
-Inclinação
-
-Deslocamento
-
-Histórico
-
-Tendência
-
-Alertas anteriores
-
-Com essas informações calcular automaticamente um Índice de Risco entre 0 e 100.
-
-Classificação:
-
-0–25 Baixo
-
-26–50 Moderado
-
-51–75 Alto
-
-76–100 Crítico
-
-A IA deverá explicar o motivo da classificação, indicando quais sensores contribuíram para o risco.
-
-Também deverá estimar a probabilidade de deslizamento nas próximas 24 horas.
-
-Botão Emitir Alerta
-
-Adicionar um botão flutuante permanente.
-
-O botão deverá existir em TODAS as páginas.
-
-Sempre fixo no canto inferior direito.
-
-Ao clicar abrir um modal contendo:
-
-Município
-
-Bairro
-
-Nível do alerta
-
-Descrição
-
-Sensores responsáveis
-
-Horário
-
-Botão Confirmar
-
-Botão Cancelar
-
-Quando a IA detectar risco crítico o alerta deverá ser aberto automaticamente.
-
-Alertas
-
-Criar uma página exclusiva contendo:
-
-Alertas Ativos
-
-Alertas Encerrados
-
-Histórico
-
-Filtros
-
-Exportação
-
-Cada alerta deverá mostrar:
-
-Município
-
-Bairro
-
-Sensor responsável
-
-Nível
-
-Data
-
-Hora
-
-Motivo
-
-Mapa
-
-Criar um mapa totalmente interativo.
-
-Mostrar todos os municípios monitorados.
-
-Ao clicar em Recife:
-
-dar zoom automaticamente.
-
-Mostrar apenas bairros de Recife.
-
-Ao clicar em um bairro:
-
-mostrar todos os sensores.
-
-Cada sensor deverá possuir uma cor conforme o risco.
-
-Verde
-
-Amarelo
-
-Laranja
-
-Vermelho
-
-Gráficos
-
-Todos os sensores deverão possuir gráficos.
-
-Pluviosidade
-
-Temperatura
-
-Umidade do Solo
-
-Vibração
-
-Inclinação
-
-Deslocamento
-
-Permitir visualizar:
-
-Últimas 24 horas
-
-Últimos 7 dias
-
-Últimos 30 dias
-
-Todos os gráficos deverão mudar automaticamente conforme a região selecionada.
-
-Histórico
-
-Criar filtros por:
-
-Município
-
-Bairro
-
-Sensor
-
-Tipo
-
-Período
-
-Risco
-
-Permitir exportar relatórios.
-
-Responsividade
-
-O sistema deverá funcionar perfeitamente em:
-
-Desktop
-
-Notebook
-
-Tablet
-
-Celular
-
-Interface
-
+# GeoAlerta RMR — ProTerra
+Sistema inteligente de monitoramento e prevenção de deslizamentos de terra na Região Metropolitana do Recife (RMR).
+
+Sobre o Projeto
+O GeoAlerta RMR é o sistema que integra a solução ProTerra, desenvolvida com o objetivo de monitorar condições ambientais, identificar áreas suscetíveis a deslizamentos e auxiliar na tomada de decisões preventivas.
+
+A plataforma combina dados de sensores ambientais, mapas interativos, indicadores de risco e recursos de inteligência artificial para oferecer uma visão integrada das condições monitoradas nos municípios da Região Metropolitana do Recife.
+
+Este repositório corresponde à branch criada para preservar o protótipo original da solução ProTerra, com a versão do site desenvolvida e hospedada por meio do v0. A versão inicial do projeto foi construída com o Lovable.
+
+Protótipo e Links
+Solução: ProTerra.
+Sistema: GeoAlerta RMR.
+Protótipo original: hospedado no v0.
+Versão anterior: desenvolvida com o Lovable.
+Site da versão anterior: prototipoinova.lovable.app.
+Projeto no Lovable: Acessar editor.
+Funcionalidades
+1. Dashboard
+Painel de monitoramento organizado em níveis hierárquicos:
+
+Região Metropolitana.
+Município.
+Bairro.
+Sensor.
+Apresenta indicadores de risco, sensores online e offline, alertas ativos, regiões em alerta e previsões para as próximas 24 horas.
+
+2. Mapa Interativo
+Visualização geográfica dos municípios, bairros e sensores monitorados, permitindo identificar áreas de risco e acompanhar a distribuição dos dispositivos.
+
+3. Monitoramento de Sensores
+O sistema contempla seis tipos de sensores ambientais:
+
+Pluviosidade.
+Umidade do solo.
+Temperatura.
+Vibração.
+Inclinação do terreno.
+Deslocamento do solo.
+Cada sensor possui informações de localização, status, bateria, intensidade do sinal, últimas leituras e histórico de medições.
+
+4. Inteligência Artificial
+O módulo IA de Prevenção de Deslizamentos analisa dados ambientais e históricos para calcular um índice de risco entre 0 e 100.
+
+Índice	Classificação
+0–25	Baixo
+26–50	Moderado
+51–75	Alto
+76–100	Crítico
+A proposta inclui explicações sobre os fatores que influenciam a classificação e estimativas de probabilidade de deslizamento nas próximas 24 horas.
+
+5. Gerenciamento de Alertas
+Central de gerenciamento com:
+
+Alertas ativos e encerrados.
+Identificação do município e bairro.
+Sensores responsáveis.
+Nível de risco, data e horário.
+Descrição e motivo do alerta.
+Visualização geográfica.
+Emissão e confirmação de alertas.
+Exportação de informações.
+6. Histórico e Relatórios
+Consulta de registros e medições com filtros por município, bairro, sensor, tipo, período e nível de risco, além da possibilidade de exportar relatórios.
+
+7. Simulação Inteligente
+Simulador de sensores com variação coerente dos dados ambientais. A simulação relaciona fatores como chuva, umidade do solo, vibração, inclinação e deslocamento para demonstrar a evolução dos níveis de risco.
+
+8. Interface e Responsividade
 Tema escuro.
+Design baseado em glassmorphism.
+Cards modernos e animações suaves.
+Barra lateral recolhível.
+Barra de navegação superior fixa.
+Botão flutuante para emissão de alertas.
+Interface adaptável para desktop, notebook, tablet e celular.
+Municípios Monitorados
+O GeoAlerta RMR foi planejado para monitorar os seguintes municípios:
 
-Glassmorphism.
+Recife.
+Olinda.
+Paulista.
+Jaboatão dos Guararapes.
+Camaragibe.
+Abreu e Lima.
+Igarassu.
+São Lourenço da Mata.
+Moreno.
+Cabo de Santo Agostinho.
+Os dashboards devem atualizar automaticamente suas informações conforme os filtros e a região selecionada.
 
-Animações suaves.
+Tecnologias e Arquitetura
+A arquitetura proposta contempla:
 
-Cards modernos.
+React: construção da interface.
+TypeScript: tipagem e segurança do código.
+Componentes reutilizáveis: padronização da interface.
+Context API: gerenciamento de estado global.
+Hooks personalizados: organização da lógica da aplicação.
+Serviços e utilitários: separação de responsabilidades.
+Design responsivo: adaptação a diferentes dispositivos.
+A estrutura busca facilitar a manutenção, a evolução e futuras integrações com sensores físicos, serviços externos e modelos de inteligência artificial.
 
-Sidebar recolhível.
+Módulos do Sistema
+O GeoAlerta RMR está organizado nos seguintes módulos:
 
-Navbar fixa.
+Dashboard.
+Mapa.
+Municípios.
+Bairros.
+Sensores.
+Alertas.
+Histórico.
+Relatórios.
+Inteligência Artificial.
+Configurações.
+Como Executar o Projeto
+Para executar o projeto localmente, é necessário ter o Node.js e o npm instalados.
 
-Mapa em tela cheia.
-
-Dashboard semelhante ao utilizado por centros de monitoramento e Defesa Civil.
-
-Simulação Inteligente
-
-Criar um simulador de sensores.
-
-Os valores deverão variar automaticamente.
-
-Quando houver chuva intensa, a umidade do solo deverá aumentar.
-
-Com aumento da umidade, poderá ocorrer aumento da inclinação e do deslocamento do solo.
-
-Quando houver deslocamento e vibração elevados, a IA deverá aumentar automaticamente o índice de risco.
-
-A simulação deve manter relações coerentes entre os sensores, em vez de gerar valores aleatórios independentes.
-
-Qualidade do Código
-
-Organizar o projeto em componentes reutilizáveis.
-
-Utilizar boas práticas de React.
-
-Criar contexto global.
-
-Separar páginas, componentes, serviços, hooks, tipos e utilitários.
-
-Utilizar TypeScript em todo o projeto.
-
-Criar um código limpo, documentado e preparado para crescimento futuro.
-
-O resultado final deverá parecer um sistema profissional pronto para apresentação acadêmica e demonstração para órgãos como a Defesa Civil, oferecendo uma experiência visual moderna, desempenho elevado e navegação intuitiva.
-
-This project was built with [Lovable](https://lovable.dev).
-
-**Live app**: https://prototipoinova.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/50b0c3d3-2649-4179-8293-a70f6ce2ed79).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+git clone <url-do-repositorio>
+cd <nome-do-projeto>
+npm install
 npm run dev
-```
+Substitua os valores entre < > pelo endereço do repositório e pelo nome da pasta do projeto.
+
+Objetivo da Solução
+A ProTerra, por meio do sistema GeoAlerta RMR, busca demonstrar como a integração entre monitoramento ambiental, visualização geográfica e análise inteligente de dados pode contribuir para a identificação preventiva de áreas suscetíveis a deslizamentos.
+
+O projeto possui finalidade acadêmica e demonstrativa, com potencial de evolução para uma solução integrada a sensores reais e sistemas de monitoramento utilizados por órgãos de proteção e Defesa Civil.
+
+Nota: dados simulados e previsões demonstrativas não substituem medições reais, validação técnica ou avaliações oficiais de risco.
+
+Licença
+A licença e as condições de utilização do projeto devem ser definidas conforme as necessidades do repositório.
