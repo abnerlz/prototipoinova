@@ -1,134 +1,237 @@
-# GeoAlerta RMR — ProTerra
-Sistema inteligente de monitoramento e prevenção de deslizamentos de terra na Região Metropolitana do Recife (RMR).
+# ProTerra — GeoAlerta RMR
 
-Sobre o Projeto
-O GeoAlerta RMR é o sistema que integra a solução ProTerra, desenvolvida com o objetivo de monitorar condições ambientais, identificar áreas suscetíveis a deslizamentos e auxiliar na tomada de decisões preventivas.
+**Sistema inteligente de monitoramento e prevenção de deslizamentos de terra na Região Metropolitana do Recife (RMR).**
 
-A plataforma combina dados de sensores ambientais, mapas interativos, indicadores de risco e recursos de inteligência artificial para oferecer uma visão integrada das condições monitoradas nos municípios da Região Metropolitana do Recife.
+## Sobre o Projeto
 
-Este repositório corresponde à branch criada para preservar o protótipo original da solução ProTerra, com a versão do site desenvolvida e hospedada por meio do v0. A versão inicial do projeto foi construída com o Lovable.
+A **ProTerra** é a solução proposta para o monitoramento ambiental e a prevenção de deslizamentos de terra. Seu sistema, denominado **GeoAlerta RMR**, tem como objetivo integrar dados de sensores ambientais, mapas interativos e recursos de inteligência artificial para auxiliar na identificação de áreas de risco e na tomada de decisões preventivas.
 
-Protótipo e Links
-Solução: ProTerra.
-Sistema: GeoAlerta RMR.
-Protótipo original: hospedado no v0.
-Versão anterior: desenvolvida com o Lovable.
-Site da versão anterior: prototipoinova.lovable.app.
-Projeto no Lovable: Acessar editor.
-Funcionalidades
-1. Dashboard
-Painel de monitoramento organizado em níveis hierárquicos:
+O sistema foi planejado para monitorar municípios da Região Metropolitana do Recife, permitindo acompanhar indicadores ambientais, visualizar sensores, identificar situações de risco e gerenciar alertas em uma única plataforma.
 
-Região Metropolitana.
-Município.
-Bairro.
-Sensor.
+Este repositório corresponde à branch criada para preservar o **protótipo original da solução ProTerra**, com a versão do site hospedada no **v0**. A versão inicial do projeto foi desenvolvida utilizando o Lovable.
+
+## Protótipo e Links
+
+- **Solução:** ProTerra
+- **Sistema:** GeoAlerta RMR
+- **Protótipo original:** hospedado no v0
+- **Site da versão anterior:** Acessar protótipo no Lovable
+- **Projeto no Lovable:** Acessar editor
+
+## Funcionalidades
+
+### 1\. Dashboard
+
+Painel de monitoramento organizado em quatro níveis:
+
+- Região Metropolitana
+- Município
+- Bairro
+- Sensor
+
 Apresenta indicadores de risco, sensores online e offline, alertas ativos, regiões em alerta e previsões para as próximas 24 horas.
 
-2. Mapa Interativo
-Visualização geográfica dos municípios, bairros e sensores monitorados, permitindo identificar áreas de risco e acompanhar a distribuição dos dispositivos.
+Os filtros permitem selecionar município, bairro, período e tipo de sensor, atualizando as informações exibidas conforme os critérios selecionados.
 
-3. Monitoramento de Sensores
+### 2\. Mapa Interativo
+
+Mapa geográfico para visualização dos municípios, bairros e sensores monitorados.
+
+Principais recursos:
+
+- Navegação entre municípios e bairros.
+- Aproximação automática ao selecionar uma região.
+- Visualização dos sensores instalados.
+- Identificação dos níveis de risco por cores.
+- Acompanhamento geográfico das áreas monitoradas.
+
+### 3\. Monitoramento de Sensores
+
 O sistema contempla seis tipos de sensores ambientais:
 
-Pluviosidade.
-Umidade do solo.
-Temperatura.
-Vibração.
-Inclinação do terreno.
-Deslocamento do solo.
-Cada sensor possui informações de localização, status, bateria, intensidade do sinal, últimas leituras e histórico de medições.
+- Sensor de pluviosidade.
+- Sensor de umidade do solo.
+- Sensor de temperatura.
+- Sensor de vibração.
+- Sensor de inclinação do terreno.
+- Sensor de deslocamento do solo.
 
-4. Inteligência Artificial
-O módulo IA de Prevenção de Deslizamentos analisa dados ambientais e históricos para calcular um índice de risco entre 0 e 100.
+Cada sensor possui informações sobre status operacional, localização geográfica, bateria, intensidade do sinal, última leitura e histórico de medições.
 
-Índice	Classificação
-0–25	Baixo
-26–50	Moderado
-51–75	Alto
-76–100	Crítico
-A proposta inclui explicações sobre os fatores que influenciam a classificação e estimativas de probabilidade de deslizamento nas próximas 24 horas.
+A plataforma também prevê gráficos para análise dos dados nas últimas 24 horas, nos últimos 7 dias e nos últimos 30 dias.
 
-5. Gerenciamento de Alertas
-Central de gerenciamento com:
+### 4\. Inteligência Artificial
 
-Alertas ativos e encerrados.
-Identificação do município e bairro.
-Sensores responsáveis.
-Nível de risco, data e horário.
-Descrição e motivo do alerta.
-Visualização geográfica.
-Emissão e confirmação de alertas.
-Exportação de informações.
-6. Histórico e Relatórios
-Consulta de registros e medições com filtros por município, bairro, sensor, tipo, período e nível de risco, além da possibilidade de exportar relatórios.
+O módulo **IA de Prevenção de Deslizamentos** foi concebido para analisar dados ambientais e históricos, calcular um índice de risco entre 0 e 100 e auxiliar na identificação de possíveis situações críticas.
 
-7. Simulação Inteligente
-Simulador de sensores com variação coerente dos dados ambientais. A simulação relaciona fatores como chuva, umidade do solo, vibração, inclinação e deslocamento para demonstrar a evolução dos níveis de risco.
+A classificação de risco proposta é:
 
-8. Interface e Responsividade
-Tema escuro.
-Design baseado em glassmorphism.
-Cards modernos e animações suaves.
-Barra lateral recolhível.
-Barra de navegação superior fixa.
-Botão flutuante para emissão de alertas.
-Interface adaptável para desktop, notebook, tablet e celular.
-Municípios Monitorados
-O GeoAlerta RMR foi planejado para monitorar os seguintes municípios:
+| Índice de risco | Classificação |
+| --- | --- |
+| 0 a 25 | Baixo |
+| 26 a 50 | Moderado |
+| 51 a 75 | Alto |
+| 76 a 100 | Crítico |
 
-Recife.
-Olinda.
-Paulista.
-Jaboatão dos Guararapes.
-Camaragibe.
-Abreu e Lima.
-Igarassu.
-São Lourenço da Mata.
-Moreno.
-Cabo de Santo Agostinho.
-Os dashboards devem atualizar automaticamente suas informações conforme os filtros e a região selecionada.
+A análise considera fatores como pluviosidade, umidade do solo, temperatura, vibração, inclinação do terreno, deslocamento do solo, tendências e alertas anteriores.
 
-Tecnologias e Arquitetura
-A arquitetura proposta contempla:
+O módulo também prevê explicações sobre os fatores que contribuíram para o risco e estimativas para as próximas 24 horas.
 
-React: construção da interface.
-TypeScript: tipagem e segurança do código.
-Componentes reutilizáveis: padronização da interface.
-Context API: gerenciamento de estado global.
-Hooks personalizados: organização da lógica da aplicação.
-Serviços e utilitários: separação de responsabilidades.
-Design responsivo: adaptação a diferentes dispositivos.
-A estrutura busca facilitar a manutenção, a evolução e futuras integrações com sensores físicos, serviços externos e modelos de inteligência artificial.
+### 5\. Gerenciamento de Alertas
 
-Módulos do Sistema
+Módulo dedicado à criação, visualização e consulta de alertas.
+
+Principais recursos:
+
+- Listagem de alertas ativos e encerrados.
+- Identificação do município e bairro.
+- Identificação dos sensores responsáveis.
+- Classificação do nível de risco.
+- Registro de data, horário e motivo.
+- Visualização da localização do alerta no mapa.
+- Emissão e confirmação de alertas.
+- Filtros e exportação de informações.
+
+A proposta inclui a abertura automática de alertas em situações de risco crítico detectadas pelo sistema.
+
+### 6\. Histórico e Relatórios
+
+O sistema prevê consultas históricas com filtros por:
+
+- Município.
+- Bairro.
+- Sensor.
+- Tipo de sensor.
+- Período.
+- Nível de risco.
+
+Também contempla a exportação de relatórios para facilitar a análise dos registros e o acompanhamento das ocorrências.
+
+### 7\. Simulação Inteligente de Sensores
+
+O simulador foi planejado para reproduzir variações coerentes entre os dados ambientais.
+
+Por exemplo, o aumento da pluviosidade pode elevar a umidade do solo e, em determinadas condições simuladas, contribuir para alterações na inclinação e no deslocamento do terreno.
+
+A elevação dos níveis de vibração e deslocamento também pode influenciar o índice de risco calculado pelo sistema.
+
+### 8\. Interface e Responsividade
+
+A interface foi concebida para oferecer uma experiência moderna, intuitiva e adequada a diferentes dispositivos.
+
+Características visuais:
+
+- Tema escuro.
+- Design inspirado em glassmorphism.
+- Cards com indicadores de monitoramento.
+- Animações suaves.
+- Barra lateral recolhível.
+- Barra de navegação superior fixa.
+- Botão flutuante para emissão de alertas.
+- Layout responsivo para desktop, notebook, tablet e celular.
+
+## Municípios Monitorados
+
+O sistema foi planejado para abranger os seguintes municípios da Região Metropolitana do Recife:
+
+1. Recife.
+2. Olinda.
+3. Paulista.
+4. Jaboatão dos Guararapes.
+5. Camaragibe.
+6. Abreu e Lima.
+7. Igarassu.
+8. São Lourenço da Mata.
+9. Moreno.
+10. Cabo de Santo Agostinho.
+
+A navegação por município e bairro permite visualizar informações específicas de cada região, conforme os dados disponíveis.
+
+## Módulos do Sistema
+
 O GeoAlerta RMR está organizado nos seguintes módulos:
 
-Dashboard.
-Mapa.
-Municípios.
-Bairros.
-Sensores.
-Alertas.
-Histórico.
-Relatórios.
-Inteligência Artificial.
-Configurações.
-Como Executar o Projeto
-Para executar o projeto localmente, é necessário ter o Node.js e o npm instalados.
+1. Dashboard.
+2. Mapa.
+3. Municípios.
+4. Bairros.
+5. Sensores.
+6. Alertas.
+7. Histórico.
+8. Relatórios.
+9. Inteligência Artificial.
+10. Configurações.
 
-git clone <url-do-repositorio>
-cd <nome-do-projeto>
+## Tecnologias e Arquitetura
+
+A arquitetura planejada para o projeto contempla:
+
+- **React:** desenvolvimento da interface.
+- **TypeScript:** tipagem estática e maior segurança no código.
+- **Componentes reutilizáveis:** padronização e manutenção da interface.
+- **Context API:** gerenciamento de estado global.
+- **Hooks personalizados:** organização da lógica da aplicação.
+- **Serviços e utilitários:** separação de responsabilidades.
+- **Design responsivo:** adaptação a diferentes tamanhos de tela.
+
+A organização do código busca facilitar a manutenção, a escalabilidade e futuras integrações com sensores físicos, serviços externos e modelos de inteligência artificial.
+
+## Como Executar o Projeto
+
+### Pré-requisitos
+
+Antes de iniciar, instale:
+
+- [Node.js](<https://nodejs.org/>)
+- npm, incluído na instalação do Node.js
+- Git
+
+### Instalação
+
+Clone o repositório e acesse a pasta do projeto:
+
+```
+git clone <URL_DO_REPOSITORIO>
+cd <NOME_DO_PROJETO>
+```
+
+Instale as dependências:
+
+```
 npm install
+```
+
+Inicie o servidor de desenvolvimento:
+
+```
 npm run dev
-Substitua os valores entre < > pelo endereço do repositório e pelo nome da pasta do projeto.
+```
 
-Objetivo da Solução
-A ProTerra, por meio do sistema GeoAlerta RMR, busca demonstrar como a integração entre monitoramento ambiental, visualização geográfica e análise inteligente de dados pode contribuir para a identificação preventiva de áreas suscetíveis a deslizamentos.
+Após iniciar o servidor, acesse o endereço local informado no terminal.
 
-O projeto possui finalidade acadêmica e demonstrativa, com potencial de evolução para uma solução integrada a sensores reais e sistemas de monitoramento utilizados por órgãos de proteção e Defesa Civil.
+> **Observação:** substitua `<URL_DO_REPOSITORIO>` pelo endereço real do repositório Git e `<NOME_DO_PROJETO>` pelo nome da pasta criada durante a clonagem.
 
-Nota: dados simulados e previsões demonstrativas não substituem medições reais, validação técnica ou avaliações oficiais de risco.
+## Objetivo da Solução
 
-Licença
-A licença e as condições de utilização do projeto devem ser definidas conforme as necessidades do repositório.
+A **ProTerra**, por meio do sistema **GeoAlerta RMR**, busca demonstrar como a integração entre monitoramento ambiental, visualização geográfica e análise inteligente de dados pode contribuir para a prevenção de deslizamentos de terra.
+
+A proposta é oferecer uma plataforma de apoio ao monitoramento de áreas suscetíveis a riscos, com potencial de utilização em projetos acadêmicos, demonstrações tecnológicas e futuras iniciativas voltadas à proteção e à Defesa Civil.
+
+## Considerações Importantes
+
+Este projeto possui finalidade acadêmica e demonstrativa. A utilização de dados simulados e estimativas produzidas por modelos computacionais não substitui medições reais, validações técnicas ou avaliações oficiais de risco.
+
+A integração com sensores físicos, serviços externos e sistemas operacionais de alerta depende das implementações e validações necessárias.
+
+## Licença
+
+A licença de utilização e distribuição do projeto deverá ser definida pelos responsáveis pelo repositório.
+
+---
+
+**ProTerra — GeoAlerta RMR**\
+_Tecnologia e inteligência aplicadas ao monitoramento ambiental e à prevenção de deslizamentos._
+
+Para publicar no GitHub: salve esse conteúdo no arquivo `README.md`, localizado na raiz do repositório. Os títulos, as listas, as tabelas e os links serão renderizados automaticamente pelo GitHub.
+
+Importante: como você informou que o protótipo original está no v0, deixei essa referência na descrição, mas sem inventar um endereço para ele. Quando tiver o link público do v0, vale adicioná-lo à seção “Protótipo e Links”.
