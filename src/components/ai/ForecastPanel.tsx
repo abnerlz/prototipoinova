@@ -4,7 +4,13 @@ import { TrendingUp } from "lucide-react";
 import { RiskBadge } from "@/components/common/RiskGauge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { shortTermForecast } from "@/lib/intelligence";
+
+import {
+  shortTermForecast,
+  DIRECTION_ICON,
+  DIRECTION_LABEL,
+} from "@/lib/intelligence";
+
 import type { RiskAssessment, Sensor } from "@/types";
 
 /** Painel "Previsão Inteligente": risco atual + horizontes de 30min, 1h e 6h. */
