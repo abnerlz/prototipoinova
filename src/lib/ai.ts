@@ -217,11 +217,11 @@ export function assessRisk(sensors: Sensor[], previousAlerts = 0): RiskAssessmen
     reasons.push(`${c.label} em ${c.value} ${c.unit} (peso ${c.weight} no índice combinado).`);
   });
   if (trend > 0.05) {
-    reasons.push("Tendência de agravamento nas últimas 6 horas (umidade do solo e inclinação em alta).");
+    reasons.push("Valores recentes em elevação; série insuficiente para confirmar tendência de 6 horas.");
   } else if (trend < -0.05) {
-    reasons.push("Tendência de estabilização: umidade do solo e inclinação em queda nas últimas 6 horas.");
+    reasons.push("Valores recentes em queda; série insuficiente para confirmar tendência de 6 horas.");
   } else {
-    reasons.push("Leituras estáveis, com oscilações dentro do esperado para o período.");
+    reasons.push("Sem variação clara nos dados recentes; estabilidade ainda não validada.");
   }
   if (susceptibility > 0.8) {
     reasons.push("Área classificada com alta suscetibilidade geológica (encostas íngremes e ocupação densa).");
@@ -230,14 +230,9 @@ export function assessRisk(sensors: Sensor[], previousAlerts = 0): RiskAssessmen
     reasons.push(`${previousAlerts} alerta(s) recente(s) na região aumentam o peso do histórico.`);
   }
 
-  const probability24h = Math.round(
-    Math.max(1, Math.min(98, score * 0.8 + warn * 3 + Math.max(0, trend) * 20 + susceptibility * 5)),
-  );
-
   return {
     score: Number(score.toFixed(1)),
     level,
-    probability24h,
     contributions: sorted,
     reasons,
     trend: trend > 0.03 ? "subindo" : trend < -0.03 ? "caindo" : "estavel",

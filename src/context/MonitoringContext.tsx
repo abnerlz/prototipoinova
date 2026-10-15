@@ -41,6 +41,7 @@ interface StartSimulationInput {
 }
 
 export type OperationMode = "real" | "simulacao";
+export type DatabaseConnection = "conectando" | "conectado" | "sem_dados" | "erro";
 
 interface MonitoringContextValue {
   sensors: Sensor[];
@@ -52,6 +53,8 @@ interface MonitoringContextValue {
   awaitingRealData: boolean;
   realStatus: LocalStatus | null;
   lastRealUpdate: number | null;
+  databaseConnection: DatabaseConnection;
+  databaseError: string | null;
   alerts: Alert[];
   filters: Filters;
   live: boolean;
@@ -111,7 +114,10 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
   const [simSensors, setSensors] = useState<Sensor[]>(() => createSensors(statesRef.current));
   const [mode, setMode] = useState<OperationMode>("real");
   const [realReadings, setRealReadings] = useState<RealReading[]>([]);
-  const realSensors = useMemo(() => sensorsFromReadings(realReadings), [realReadings]);
+  const [freshnessClock, setFreshnessClock] = useState(Date.now());
+  const [databaseConnection, setDatabaseConnection] = useState<DatabaseConnection>("conectando");
+  const [databaseError, setDatabaseError] = useState<string | null>(null);
+  const realSensors = useMemo(() => sensorsFromReadings(realReadings), [realReadings, freshnessClock]);
   const sensors = mode === "real" ? realSensors : simSensors;
   const latestReal = realReadings[0] ?? null;
   const realStatus = latestReal ? computeStatus(latestReal).status : null;
@@ -126,6 +132,11 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
   const [live, setLive] = useState(true);
   const [intervalMs, setIntervalMs] = useState(4000);
   const [lastTick, setLastTick] = useState(Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setFreshnessClock(Date.now()), 5000);
+    return () => window.clearInterval(id);
+  }, []);
 
   const simRef = useRef<SimRuntime | null>(null);
   const [simulation, setSimulation] = useState<SimulationState | null>(null);
@@ -144,24 +155,37 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (mode !== "real") return;
     let cancelled = false;
+    let timer: number | undefined;
 
     const load = async () => {
-      const { data, error } = await supabase
-        .from("sensor_readings")
-        .select("*")
-        .eq("sensor_id", DEFAULT_SENSOR_ID)
-        .order("created_at", { ascending: false })
-        .limit(300);
-      if (cancelled || error || !data) return;
-      setRealReadings(data as RealReading[]);
-      setLastTick(Date.now());
+      try {
+        const { data, error } = await supabase
+          .from("sensor_readings")
+          .select("id, sensor_id, temperatura, umidade_ar, umidade_solo, inclinacao, vibracao, chuva, created_at")
+          .eq("sensor_id", DEFAULT_SENSOR_ID)
+          .order("created_at", { ascending: false })
+          .limit(300);
+        if (cancelled) return;
+        if (error) throw error;
+        const rows = (data ?? []) as RealReading[];
+        setRealReadings(rows);
+        setDatabaseConnection(rows.length ? "conectado" : "sem_dados");
+        setDatabaseError(null);
+        setLastTick(Date.now());
+      } catch (cause) {
+        if (cancelled) return;
+        console.error("[monitoramento] falha ao consultar banco", cause);
+        setDatabaseConnection("erro");
+        setDatabaseError(cause instanceof Error ? cause.message : "Não foi possível consultar o banco.");
+      } finally {
+        if (!cancelled) timer = window.setTimeout(() => void load(), 5000);
+      }
     };
 
     void load();
-    const id = window.setInterval(() => void load(), 5000);
     return () => {
       cancelled = true;
-      window.clearInterval(id);
+      if (timer !== undefined) window.clearTimeout(timer);
     };
   }, [mode]);
 
@@ -246,8 +270,8 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
             value,
             history,
             lastUpdate: now,
-            battery: Math.max(5, sensor.battery - (Math.random() < 0.02 ? 1 : 0)),
-            signal: Math.max(20, Math.min(100, sensor.signal + Math.round((Math.random() - 0.5) * 4))),
+            battery: Math.max(5, (sensor.battery ?? 70) - (Math.random() < 0.02 ? 1 : 0)),
+            signal: Math.max(20, Math.min(100, (sensor.signal ?? 70) + Math.round((Math.random() - 0.5) * 4))),
           };
         }),
       );
@@ -362,6 +386,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
     if (!sim) return;
     const endedAt = Date.now();
     simRef.current = null;
+    setMode("real");
     setSimulation((prev) => {
       if (prev) {
         setSimulationHistory((hist) => [
@@ -406,7 +431,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
         municipalityId: sim.municipalityId,
         neighborhoodId: sim.neighborhoodId,
         level: "critico",
-        description: `IA (simulação): índice crítico de ${assessment.score} em ${name}. Probabilidade de deslizamento em 24h: ${assessment.probability24h}%.`,
+        description: `Simulação fictícia: índice experimental crítico (${assessment.score}) em ${name}. Não representa probabilidade de deslizamento.`,
         sensorIds: scoped.map((s) => s.id),
         origin: "ia",
       });
@@ -520,6 +545,8 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       awaitingRealData: mode === "real" && realReadings.length === 0,
       realStatus,
       lastRealUpdate,
+      databaseConnection,
+      databaseError,
       alerts,
       filters,
       live,
@@ -547,6 +574,8 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       realReadings,
       realStatus,
       lastRealUpdate,
+      databaseConnection,
+      databaseError,
       alerts,
       filters,
       live,

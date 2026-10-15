@@ -90,7 +90,7 @@ function AppSidebar() {
 }
 
 function TopBar() {
-  const { sensors, alerts, riskFor, live, lastTick } = useMonitoring();
+  const { sensors, alerts, riskFor, live, lastTick, mode, databaseConnection } = useMonitoring();
   const hydrated = useHydrated();
   const global = riskFor();
   const online = sensors.filter((s) => s.status === "online").length;
@@ -115,7 +115,7 @@ function TopBar() {
               live ? "bg-risk-low pulse-dot text-risk-low" : "bg-muted-foreground",
             )}
           />
-          {live ? "Tempo real" : "Pausado"}
+          {mode === "simulacao" ? "Simulação" : databaseConnection === "conectado" ? "Banco conectado" : databaseConnection === "sem_dados" ? "Banco sem dados" : databaseConnection === "erro" ? "Erro no banco" : "Conectando ao banco"}
         </Badge>
         <Badge variant="outline" className="hidden border-border/70 sm:inline-flex">
           {online}/{sensors.length} sensores
@@ -133,12 +133,42 @@ function TopBar() {
 
 /** Shell da aplicação: sidebar recolhível, navbar fixa e botão de alerta global. */
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const { mode, databaseConnection, databaseError, sensors, lastRealUpdate } = useMonitoring();
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar />
+          <div className="space-y-2 px-3 pt-3 sm:px-5">
+            {mode === "simulacao" ? (
+              <div role="status" className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-900 dark:text-amber-200">
+                SIMULAÇÃO: os valores exibidos são fictícios e não representam medições reais.
+              </div>
+            ) : databaseConnection === "erro" ? (
+              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+                Não foi possível ler os sensores no banco. {databaseError ? `Detalhe: ${databaseError}` : "Verifique a conexão e as permissões do Supabase."}
+              </div>
+            ) : databaseConnection === "sem_dados" ? (
+              <div role="status" className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-900 dark:text-amber-200">
+                Banco conectado, mas ainda não há leituras para este sensor.
+              </div>
+            ) : null}
+            {mode === "real" && (
+              <div role="note" className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2 text-xs text-muted-foreground">
+                Cobertura real configurada neste protótipo: uma unidade (SENSOR-001) no Ibura. As demais áreas ainda não têm sensores conectados; os mapas e índices regionais não representam cobertura real.
+              </div>
+            )}
+            {mode === "real" && databaseConnection === "conectado" && sensors.length > 0 && sensors.every((sensor) => sensor.status === "offline") && (
+              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+                O banco responde, mas a última leitura do sensor está antiga. Não trate esses dados como monitoramento ao vivo.
+                {lastRealUpdate ? ` Última leitura: ${new Date(lastRealUpdate).toLocaleString("pt-BR")}.` : ""}
+              </div>
+            )}
+            <div className="rounded-lg border border-border bg-muted/50 px-4 py-2 text-xs text-muted-foreground">
+              Protótipo de demonstração: alertas ficam apenas nesta sessão, e o índice não foi validado. Não substitui avaliação técnica nem decisão da Defesa Civil.
+            </div>
+          </div>
           <motion.main
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}

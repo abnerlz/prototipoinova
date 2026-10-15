@@ -51,8 +51,8 @@ export interface Sensor {
   municipalityId: string;
   neighborhoodId: string;
   position: Coordinates;
-  battery: number;
-  signal: number;
+  battery: number | null;
+  signal: number | null;
   value: number;
   unit: string;
   lastUpdate: number;
@@ -62,7 +62,6 @@ export interface Sensor {
 export interface RiskAssessment {
   score: number;
   level: RiskLevel;
-  probability24h: number;
   /** Contribuição de cada tipo de sensor para o índice (0-100). */
   contributions: { type: SensorType; label: string; weight: number; value: number; unit: string }[];
   reasons: string[];

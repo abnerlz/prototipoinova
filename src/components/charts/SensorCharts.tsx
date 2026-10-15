@@ -15,7 +15,7 @@ import {
 import { getSensorMeta } from "@/data/regions";
 import type { Sensor, SensorType } from "@/types";
 
-const PERIOD_POINTS: Record<string, number> = { "24h": 24, "7d": 168, "30d": 168 };
+const PERIOD_HOURS: Record<string, number> = { "24h": 24, "7d": 168, "30d": 720 };
 
 export interface SeriesPoint {
   label: string;
@@ -27,60 +27,33 @@ export interface SeriesPoint {
 export function buildSeries(sensors: Sensor[], period: string, types?: SensorType[]): SeriesPoint[] {
   if (!sensors.length) return [];
   const wanted = types ?? Array.from(new Set(sensors.map((s) => s.type)));
-  const points = PERIOD_POINTS[period] ?? 24;
-  const bucketCount = period === "30d" ? 30 : period === "7d" ? 28 : 24;
-  const reference = sensors[0].history.slice(-points);
-  if (!reference.length) return [];
-  const step = Math.max(1, Math.floor(reference.length / bucketCount));
-
-  const series: SeriesPoint[] = [];
-  for (let i = 0; i < reference.length; i += step) {
-    const slice = reference.slice(i, i + step);
-    const timestamp = slice[slice.length - 1].timestamp;
+  const now = Date.now();
+  const cutoff = now - (PERIOD_HOURS[period] ?? 24) * 3_600_000;
+  const bucketMs = period === "24h" ? 3_600_000 : period === "7d" ? 6 * 3_600_000 : 24 * 3_600_000;
+  const buckets = new Map<number, Map<SensorType, { sum: number; count: number }>>();
+  for (const sensor of sensors) {
+    if (!wanted.includes(sensor.type)) continue;
+    for (const reading of sensor.history) {
+      if (reading.timestamp < cutoff || reading.timestamp > now) continue;
+      const timestamp = Math.floor(reading.timestamp / bucketMs) * bucketMs;
+      const values = buckets.get(timestamp) ?? new Map<SensorType, { sum: number; count: number }>();
+      const current = values.get(sensor.type) ?? { sum: 0, count: 0 };
+      current.sum += reading.value;
+      current.count += 1;
+      values.set(sensor.type, current);
+      buckets.set(timestamp, values);
+    }
+  }
+  return [...buckets.entries()].sort(([a], [b]) => a - b).map(([timestamp, values]) => {
     const point: SeriesPoint = {
       timestamp,
-      label:
-        period === "24h"
-          ? new Date(timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-          : new Date(timestamp).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+      label: period === "24h"
+        ? new Date(timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+        : new Date(timestamp).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
     };
-    wanted.forEach((type) => {
-      const typed = sensors.filter((s) => s.type === type);
-      if (!typed.length) return;
-      let sum = 0;
-      let n = 0;
-      typed.forEach((sensor) => {
-        const hist = sensor.history.slice(-points);
-        hist.slice(i, i + step).forEach((reading) => {
-          sum += reading.value;
-          n += 1;
-        });
-      });
-      if (n) point[type] = Number((sum / n).toFixed(2));
-    });
-    series.push(point);
-  }
-  // Para 30 dias, extrapola a curva de 7 dias mantendo coerência visual.
-  if (period === "30d" && series.length) {
-    const extended: SeriesPoint[] = [];
-    for (let d = 29; d >= 0; d -= 1) {
-      const base = series[Math.max(0, series.length - 1 - (d % series.length))];
-      const timestamp = Date.now() - d * 86_400_000;
-      const point: SeriesPoint = {
-        timestamp,
-        label: new Date(timestamp).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
-      };
-      wanted.forEach((type) => {
-        const value = base[type];
-        if (typeof value === "number") {
-          point[type] = Number((value * (0.82 + ((d * 37) % 40) / 100)).toFixed(2));
-        }
-      });
-      extended.push(point);
-    }
-    return extended;
-  }
-  return series;
+    values.forEach(({ sum, count }, type) => { point[type] = Number((sum / count).toFixed(2)); });
+    return point;
+  });
 }
 
 const COLORS: Record<SensorType, string> = {

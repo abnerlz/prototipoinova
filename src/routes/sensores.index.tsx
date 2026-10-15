@@ -47,7 +47,7 @@ function SensoresPage() {
               </p>
               <SingleSensorChart sensor={sensor} period={filters.period} height={140} />
               <p className="text-[11px] text-muted-foreground">
-                Bateria {sensor.battery}% · Sinal {sensor.signal}% · {new Date(sensor.lastUpdate).toLocaleTimeString("pt-BR")}
+                Bateria {sensor.battery === null ? "sem dado" : `${sensor.battery}%`} · Sinal {sensor.signal === null ? "sem dado" : `${sensor.signal}%`} · {new Date(sensor.lastUpdate).toLocaleTimeString("pt-BR")}
               </p>
             </CardContent>
           </Card>

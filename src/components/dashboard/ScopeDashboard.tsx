@@ -17,8 +17,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Line,
-  ComposedChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -34,7 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useMonitoring } from "@/context/MonitoringContext";
 import { MUNICIPALITIES, NEIGHBORHOODS, getMunicipality, getNeighborhood } from "@/data/regions";
-import { RISK_COLOR, RISK_LABEL, assessRisk, forecast24h } from "@/lib/ai";
+import { RISK_COLOR, RISK_LABEL, assessRisk } from "@/lib/ai";
 import type { SensorType } from "@/types";
 
 interface ScopeDashboardProps {
@@ -63,7 +61,6 @@ export function ScopeDashboard({ municipalityId, neighborhoodId }: ScopeDashboar
   const scoped = sensorsIn(scopeMunicipality, scopeNeighborhood, filters.sensorType);
   const scopedAll = sensorsIn(scopeMunicipality, scopeNeighborhood);
   const risk = riskFor(scopeMunicipality, scopeNeighborhood);
-  const forecast = useMemo(() => forecast24h(risk), [risk.score, risk.trend]);
 
   const scopedAlerts = alerts.filter(
     (a) =>
@@ -115,8 +112,8 @@ export function ScopeDashboard({ municipalityId, neighborhoodId }: ScopeDashboar
         <StatCard icon={WifiOff} label="Sensores offline" value={offline} hint="Requerem manutenção" tone={offline > 0 ? "high" : "low"} delay={0.12} />
         <StatCard icon={AlertTriangle} label="Alertas" value={scopedAlerts.length} hint={`${scopedAlerts.filter((a) => a.status === "ativo").length} ativos`} tone={scopedAlerts.some((a) => a.status === "ativo") ? "critical" : "default"} delay={0.16} />
         <StatCard icon={MapPin} label="Regiões em alerta" value={regionsInAlert} hint="Risco alto ou crítico" tone={regionsInAlert ? "high" : "low"} delay={0.2} />
-        <StatCard icon={BrainCircuit} label="Status da IA" value="Operacional" hint={`Tendência ${risk.trend}`} delay={0.24} />
-        <StatCard icon={Timer} label="Probabilidade 24h" value={`${risk.probability24h}%`} hint="Deslizamento no escopo" tone={risk.probability24h > 60 ? "critical" : "medium"} delay={0.28} />
+        <StatCard icon={BrainCircuit} label="Índice de análise" value="Experimental" hint="Não validado para decisão operacional" delay={0.24} />
+        <StatCard icon={Timer} label="Previsão em 24h" value="Não validada" hint="Sem modelo calibrado" tone="medium" delay={0.28} />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
@@ -125,7 +122,7 @@ export function ScopeDashboard({ municipalityId, neighborhoodId }: ScopeDashboar
             <CardTitle className="text-base">Índice consolidado</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
-            <RiskGauge score={risk.score} sublabel={`Probabilidade de deslizamento em 24h: ${risk.probability24h}%`} />
+            <RiskGauge score={risk.score} sublabel="Índice experimental; não representa probabilidade de deslizamento." />
             <div className="w-full space-y-2">
               {risk.contributions.slice(0, 4).map((c) => (
                 <div key={c.type} className="space-y-1">
@@ -142,25 +139,12 @@ export function ScopeDashboard({ municipalityId, neighborhoodId }: ScopeDashboar
 
         <Card className="glass border-border/60 xl:col-span-2">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Previsão da IA — próximas 24 horas</CardTitle>
+            <CardTitle className="text-base">Projeção de risco</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={264}>
-              <ComposedChart data={forecast} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="forecastGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.6} />
-                    <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.05} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="var(--border)" strokeDasharray="3 6" vertical={false} />
-                <XAxis dataKey="hour" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} width={44} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="risco" name="Índice previsto" fill="url(#forecastGrad)" radius={[6, 6, 0, 0]} isAnimationActive={false} />
-                <Line dataKey="limiteCritico" name="Limiar crítico" stroke="var(--risk-critical)" strokeDasharray="6 6" dot={false} isAnimationActive={false} />
-              </ComposedChart>
-            </ResponsiveContainer>
+            <div className="grid h-[264px] place-items-center rounded-lg border border-amber-500/30 bg-amber-500/5 p-6 text-center text-sm text-muted-foreground">
+              Ainda não há modelo validado para prever as próximas horas. O painel mostra somente medições recebidas e um índice experimental; decisões operacionais precisam de análise técnica humana.
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -263,7 +247,7 @@ export function ScopeDashboard({ municipalityId, neighborhoodId }: ScopeDashboar
                       <p className="font-display mt-3 text-2xl font-bold tabular-nums">{assessment.score}</p>
                       <p className="text-xs text-muted-foreground">
                         {sensors.filter((s) => s.neighborhoodId === neighborhood.id).length} sensores ·{" "}
-                        {assessment.probability24h}% em 24h
+                        Previsão não validada
                       </p>
                     </motion.div>
                   </Link>
@@ -305,7 +289,7 @@ export function ScopeDashboard({ municipalityId, neighborhoodId }: ScopeDashboar
                   {sensor.value} <span className="text-xs font-normal text-muted-foreground">{sensor.unit}</span>
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  {sensor.code} · bateria {sensor.battery}% · sinal {sensor.signal}%
+                  {sensor.code} · bateria {sensor.battery === null ? "sem dado" : `${sensor.battery}%`} · sinal {sensor.signal === null ? "sem dado" : `${sensor.signal}%`}
                 </p>
               </div>
             </Link>

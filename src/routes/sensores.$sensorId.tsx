@@ -56,12 +56,12 @@ function SensorPage() {
               </div>
             ))}
             <div className="pt-2">
-              <p className="mb-1 flex justify-between text-xs"><span className="text-muted-foreground">Bateria</span><span>{sensor.battery}%</span></p>
-              <Progress value={sensor.battery} className="h-1.5" />
+              <p className="mb-1 flex justify-between text-xs"><span className="text-muted-foreground">Bateria</span><span>{sensor.battery === null ? "Sem dado do equipamento" : `${sensor.battery}%`}</span></p>
+              {sensor.battery !== null && <Progress value={sensor.battery} className="h-1.5" />}
             </div>
             <div>
-              <p className="mb-1 flex justify-between text-xs"><span className="text-muted-foreground">Intensidade do sinal</span><span>{sensor.signal}%</span></p>
-              <Progress value={sensor.signal} className="h-1.5" />
+              <p className="mb-1 flex justify-between text-xs"><span className="text-muted-foreground">Intensidade do sinal</span><span>{sensor.signal === null ? "Sem dado do equipamento" : `${sensor.signal}%`}</span></p>
+              {sensor.signal !== null && <Progress value={sensor.signal} className="h-1.5" />}
             </div>
           </CardContent>
         </Card>

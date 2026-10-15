@@ -63,7 +63,7 @@ function IaPage() {
           <CardHeader className="pb-2"><CardTitle className="text-base">Previsão do escopo atual</CardTitle></CardHeader>
           <CardContent className="flex flex-col items-center gap-3">
             <RiskGauge score={risk.score} size={170} label="Índice de risco" />
-            <p className="text-sm text-muted-foreground">Probabilidade em 24h: <strong className="text-foreground">{risk.probability24h}%</strong></p>
+            <p className="text-sm text-muted-foreground">Probabilidade em 24h: <strong className="text-foreground">Não validada</strong></p>
             <RiskBadge level={risk.level} />
           </CardContent>
         </Card>
@@ -97,9 +97,9 @@ function IaPage() {
             <div key={n.id} className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/20 p-2">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{n.name} <span className="text-xs text-muted-foreground">· {getMunicipality(n.municipalityId)?.name}</span></p>
-                <Progress value={r.probability24h} className="mt-1 h-1.5" />
+                <Progress value={r.score} className="mt-1 h-1.5" />
               </div>
-              <span className="font-display tabular-nums">{r.probability24h}%</span>
+              <span className="font-display tabular-nums">Índice {r.score}</span>
               <RiskBadge level={r.level} />
             </div>
           ))}

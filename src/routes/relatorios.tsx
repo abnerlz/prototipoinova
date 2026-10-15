@@ -50,7 +50,7 @@ function RelatoriosPage() {
                 municipio: r.m.name,
                 indice: r.risk.score,
                 nivel: r.risk.level,
-                probabilidade24h: `${r.risk.probability24h}%`,
+                probabilidade24h: "Não validada",
                 bairros: r.bairros,
                 sensores: r.sensores,
                 online: r.online,
@@ -73,7 +73,7 @@ function RelatoriosPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
               <Info label="Índice" value={r.risk.score} />
-              <Info label="Prob. 24h" value={`${r.risk.probability24h}%`} />
+              <Info label="Previsão 24h" value="Não validada" />
               <Info label="Bairros" value={r.bairros} />
               <Info label="Sensores" value={r.sensores} />
               <Info label="Online" value={r.online} />

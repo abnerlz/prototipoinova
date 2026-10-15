@@ -4,7 +4,7 @@ import { TrendingUp } from "lucide-react";
 import { RiskBadge } from "@/components/common/RiskGauge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { DIRECTION_ICON, DIRECTION_LABEL, shortTermForecast } from "@/lib/intelligence";
+import { shortTermForecast } from "@/lib/intelligence";
 import type { RiskAssessment, Sensor } from "@/types";
 
 /** Painel "Previsão Inteligente": risco atual + horizontes de 30min, 1h e 6h. */
@@ -28,6 +28,9 @@ export function ForecastPanel({ risk, sensors }: { risk: RiskAssessment; sensors
           <RiskBadge level={risk.level} />
         </div>
 
+        <p className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-muted-foreground">
+          As projeções são demonstrativas e não foram validadas com histórico suficiente. Não use este painel para emitir alertas ou decidir evacuações.
+        </p>
         {points.map((p, i) => (
           <motion.div
             key={p.horizon}

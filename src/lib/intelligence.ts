@@ -16,7 +16,7 @@ export interface PipelineStep {
 }
 
 /** Etapas fixas do processo decisório da IA (exibidas em sequência animada). */
-export function buildPipeline(sensors: Sensor[], risk: RiskAssessment, confidence: number): PipelineStep[] {
+export function buildPipeline(sensors: Sensor[], risk: RiskAssessment): PipelineStep[] {
   const online = sensors.filter((s) => s.status === "online");
   const invalid = sensors.length - online.length;
   const top = risk.contributions[0];
@@ -39,29 +39,29 @@ export function buildPipeline(sensors: Sensor[], risk: RiskAssessment, confidenc
       label: "Análise de tendência",
       detail:
         risk.trend === "subindo"
-          ? "Curvas em elevação nas últimas 6 horas."
+          ? "Valores recentes em elevação; período insuficiente para confirmar tendência de 6 horas."
           : risk.trend === "caindo"
-            ? "Curvas em recuo nas últimas 6 horas."
-            : "Curvas estáveis, oscilando dentro da faixa habitual.",
+            ? "Valores recentes em recuo; período insuficiente para confirmar tendência de 6 horas."
+            : "Sem variação clara nos dados recentes; estabilidade ainda não validada.",
     },
     {
       key: "historico",
       label: "Comparação com histórico",
-      detail: "Leituras confrontadas com a série de 7 dias e episódios anteriores da encosta.",
+      detail: "Histórico longo e episódios anteriores ainda não estão disponíveis para comparação.",
     },
     {
       key: "previsao",
       label: "Previsão de risco",
-      detail: `Probabilidade de ocorrência em 24h estimada em ${risk.probability24h}%.`,
+      detail: "Previsão de ocorrência não disponível: falta modelo calibrado e validado.",
     },
     {
       key: "confianca",
       label: "Nível de confiança",
-      detail: `Confiança do modelo em ${confidence}% para o escopo analisado.`,
+      detail: "Confiabilidade ainda não validada com dados de campo.",
     },
     {
       key: "decisao",
-      label: "Decisão automática",
+      label: "Índice experimental",
       detail: `Classificação combinada: risco ${RISK_LABEL[risk.level].toUpperCase()} (${risk.score}/100).`,
     },
     {
@@ -72,34 +72,6 @@ export function buildPipeline(sensors: Sensor[], risk: RiskAssessment, confidenc
         : "Plano operacional emitido para o gestor.",
     },
   ];
-}
-
-/**
- * Confiança da IA (85-99%): cresce com a cobertura de sensores e com a
- * estabilidade das leituras; cai com sensores offline e ruído elevado.
- */
-export function aiConfidence(sensors: Sensor[], risk: RiskAssessment): number {
-  if (!sensors.length) return 85;
-  const online = sensors.filter((s) => s.status === "online");
-  const coverage = online.length / sensors.length;
-  const types = new Set(online.map((s) => s.type)).size / 6;
-
-  // Ruído: dispersão relativa das últimas leituras.
-  const noise =
-    online.reduce((acc, s) => {
-      const tail = s.history.slice(-8).map((h) => h.value);
-      if (tail.length < 3) return acc;
-      const mean = tail.reduce((a, b) => a + b, 0) / tail.length;
-      if (mean === 0) return acc;
-      const sd = Math.sqrt(tail.reduce((a, b) => a + (b - mean) ** 2, 0) / tail.length);
-      return acc + Math.min(1, sd / Math.abs(mean));
-    }, 0) / Math.max(1, online.length);
-
-  const battery = online.reduce((a, s) => a + s.battery, 0) / Math.max(1, online.length) / 100;
-  const stability = risk.trend === "estavel" ? 1 : 0.7;
-
-  const raw = 85 + coverage * 6 + types * 4 + battery * 2 + stability * 2 - noise * 6;
-  return Math.round(Math.max(85, Math.min(99, raw)));
 }
 
 export type ForecastDirection = "subindo" | "estavel" | "caindo";

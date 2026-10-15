@@ -53,7 +53,7 @@ export function NeighborhoodSheet({
                   Status: {STATUS_BY_LEVEL[risk.level]}
                 </Badge>
                 <Badge variant="outline" className="border-border/70">
-                  Probabilidade 24h: {risk.probability24h}%
+                  Previsão em 24h: não validada
                 </Badge>
                 <Badge variant="outline" className="border-border/70">
                   Atualizado {lastUpdate ? new Date(lastUpdate).toLocaleTimeString("pt-BR") : "—"}

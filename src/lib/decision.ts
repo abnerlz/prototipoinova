@@ -53,12 +53,10 @@ function avg(sensors: Sensor[], type: SensorType) {
   return list.reduce((a, s) => a + s.value, 0) / list.length;
 }
 
-/** Chuva acumulada estimada nas últimas 24h (mm) a partir do histórico horário. */
+/** Não calcula acumulado sem uma série que cubra as 24 horas completas. */
 export function rainfall24h(sensors: Sensor[]) {
-  const rain = sensors.filter((s) => s.type === "pluviosidade");
-  if (!rain.length) return 0;
-  const totals = rain.map((s) => s.history.slice(-24).reduce((a, r) => a + r.value, 0));
-  return Number((totals.reduce((a, b) => a + b, 0) / totals.length).toFixed(1));
+  void sensors;
+  return null; // A leitura atual está em mm/h; falta integrar a série para obter mm acumulados.
 }
 
 export interface DecisionInput {
@@ -72,7 +70,7 @@ export interface DecisionInput {
 export interface DecisionOutput {
   recommendations: Recommendation[];
   summary: string;
-  rainfall: number;
+  rainfall: number | null;
   recentAlerts: number;
   topPriority: DecisionPriority;
 }
@@ -85,7 +83,7 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   const tilt = avg(sensors, "inclinacao");
   const vibration = avg(sensors, "vibracao");
   const offline = sensors.filter((s) => s.status !== "online").length;
-  const lowBattery = sensors.filter((s) => s.battery < 25).length;
+  const lowBattery = sensors.filter((s) => s.battery !== null && s.battery < 25).length;
 
   const day = 24 * 60 * 60 * 1000;
   const recentAlerts = alerts.filter((a) => Date.now() - a.createdAt < 7 * day).length;
@@ -94,8 +92,7 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   const recs: Recommendation[] = [];
   const fact = (condition: boolean, text: string) => (condition ? text : "");
   const facts = [
-    fact(rain >= 40, `volume de chuva de ${rain} mm nas últimas 24 horas`),
-    fact(rain > 0 && rain < 40, `chuva acumulada de ${rain} mm nas últimas 24 horas`),
+    fact(rain !== null, `chuva acumulada medida nas últimas 24 horas: ${rain ?? "indisponível"} mm`),
     humidity !== undefined ? `umidade do solo em ${humidity.toFixed(0)}%` : "",
     airHumidity !== undefined ? `umidade do ar em ${airHumidity.toFixed(0)}%` : "",
   ].filter(Boolean);
@@ -105,18 +102,18 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   if (risk.level === "baixo") {
     recs.push({
       id: "monitorar",
-      action: "Manter monitoramento de rotina",
+      action: "Conferir a qualidade dos dados e manter a rotina definida pela equipe",
       priority: "baixa",
-      rationale: `${scopeLabel} opera dentro das faixas de normalidade (${context || "sensores estáveis"}). Nenhuma ação de campo é necessária neste momento.`,
-      deadline: "Ciclo padrão (a cada 6h)",
+      rationale: `O índice experimental está baixo (${context || "sem alterações detectadas"}). Isso não confirma segurança da área; siga o protocolo local e verifique se as leituras estão atualizadas.`,
+      deadline: "Conforme protocolo local",
     });
   } else {
     recs.push({
       id: "intensificar",
-      action: "Intensificar o monitoramento da área",
+      action: "Revisar as leituras e o intervalo de monitoramento",
       priority: risk.level === "critico" ? "alta" : risk.level === "alto" ? "alta" : "moderada",
-      rationale: `Índice de risco em ${risk.score} (${risk.trend}) com ${context}. Reduzir o intervalo de leitura e acompanhar a evolução em tempo real.`,
-      deadline: "Imediato",
+      rationale: `Índice experimental em ${risk.score} (${risk.trend}) com ${context || "contexto incompleto"}. Confirme os dados com a equipe responsável e aplique o protocolo local.`,
+      deadline: "Revisão humana necessária",
     });
   }
 
@@ -124,21 +121,21 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   if (risk.score >= 35 || (tilt !== undefined && tilt >= 4)) {
     recs.push({
       id: "vistoria",
-      action: "Enviar equipe para vistoria técnica",
+      action: "Solicitar avaliação técnica da área",
       priority: risk.level === "critico" ? "alta" : risk.level === "alto" ? "alta" : "moderada",
-      rationale: `Sinais de movimentação do solo em ${scopeLabel}${tilt !== undefined ? ` (inclinação ${tilt.toFixed(1)}°)` : ""}. Vistoria presencial confirma trincas, surgências e estabilidade das encostas.`,
-      deadline: risk.score >= 35 ? "12h" : "48h",
+      rationale: `O índice experimental ou a leitura de inclinação merece conferência. A equipe habilitada deve avaliar o local e validar os dados antes de concluir sobre a estabilidade.`,
+      deadline: "Definido pela equipe responsável",
     });
   }
 
-  // Alerta preventivo à população.
-  if (risk.level === "alto" || risk.level === "critico" || (rain >= 50 && risk.level === "moderado")) {
+  // Revisão técnica humana, sem emissão automática de alerta público.
+  if (risk.level === "alto" || risk.level === "critico" || (rain !== null && rain >= 50 && risk.level === "moderado")) {
     recs.push({
       id: "alerta-preventivo",
-      action: "Emitir alerta preventivo à população",
+      action: "Solicitar revisão de profissional responsável",
       priority: risk.level === "critico" ? "critica" : "alta",
-      rationale: `A região apresentou ${rain} mm de chuva nas últimas 24 horas, associado à movimentação do solo detectada pelos sensores. Probabilidade de ocorrência em 24h estimada em ${risk.probability24h}%.`,
-      deadline: "Imediato",
+      rationale: `O índice experimental está elevado. Confirme a qualidade das leituras e siga o protocolo oficial da Defesa Civil antes de qualquer ação. Chuva acumulada e probabilidade não estão validadas neste protótipo.`,
+      deadline: "Revisão humana necessária",
     });
   }
 
@@ -146,10 +143,10 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   if (risk.level === "critico" || (risk.level === "alto" && (tilt ?? 0) >= 9)) {
     recs.push({
       id: "interdicao",
-      action: "Recomendar interdição temporária de vias e imóveis em encosta",
+      action: "Revisar presencialmente conforme protocolo oficial",
       priority: risk.level === "critico" ? "critica" : "alta",
-      rationale: `Combinação de saturação do solo${humidity !== undefined ? ` (${humidity.toFixed(0)}%)` : ""} e inclinação crescente indica perda de estabilidade. Restringir circulação nas cotas mais altas reduz exposição imediata.`,
-      deadline: "Imediato",
+      rationale: `O índice experimental exige conferência técnica. O sistema não determina interdição; essa decisão cabe à autoridade competente após vistoria.`,
+      deadline: "Revisão humana necessária",
     });
   }
 
@@ -157,10 +154,10 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   if (risk.level === "critico") {
     recs.push({
       id: "evacuacao",
-      action: "Solicitar evacuação preventiva",
+      action: "Conferir leituras e encaminhar para avaliação da Defesa Civil",
       priority: "critica",
-      rationale: `Risco CRÍTICO (${risk.score}/100) em ${scopeLabel}${households ? `, com cerca de ${households.toLocaleString("pt-BR")} domicílios expostos` : ""}. Acionar Defesa Civil e abrigos de apoio antes da evolução do quadro.`,
-      deadline: "Imediato",
+      rationale: `Índice experimental crítico (${risk.score}/100) em ${scopeLabel}${households ? `; cadastro indica cerca de ${households.toLocaleString("pt-BR")} domicílios` : ""}. Validar sensores e encaminhar para avaliação humana. Não é uma ordem de evacuação.`,
+      deadline: "Revisão humana necessária",
     });
   }
 
@@ -202,9 +199,9 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   const topPriority = recs[0]?.priority ?? "baixa";
   const summary =
     risk.level === "critico"
-      ? `Cenário crítico em ${scopeLabel}: acionar evacuação preventiva e interdição imediata.`
+      ? `Índice experimental crítico em ${scopeLabel}: requer revisão humana; não é ordem de evacuação ou interdição.`
       : risk.level === "alto"
-        ? `Quadro de alerta em ${scopeLabel}: vistoria em campo e comunicado preventivo à população.`
+        ? `Índice elevado em ${scopeLabel}: conferir dados e encaminhar para avaliação técnica.`
         : risk.level === "moderado"
           ? `Atenção em ${scopeLabel}: intensificar leituras e programar vistoria preventiva.`
           : `Situação normal em ${scopeLabel}: manter rotina de monitoramento.`;

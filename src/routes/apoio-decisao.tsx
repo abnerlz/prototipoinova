@@ -117,7 +117,7 @@ function ApoioDecisaoPage() {
                   <strong className="text-foreground">{top?.action}</strong> — {top?.rationale}
                 </p>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Chuva 24h: {decision.rainfall} mm · Índice {risk.score} · Prob. {risk.probability24h}% ·{" "}
+                  Chuva acumulada: dado insuficiente · Índice experimental {risk.score} · Previsão 24h não validada ·{" "}
                   {decision.recentAlerts} alerta(s) em 7 dias
                 </p>
               </Link>
