@@ -55,7 +55,28 @@ function createSupabaseAdminClient() {
   });
 }
 
+/**
+ * Server-side client for public, RLS-protected reads. Reading sensor data must
+ * not depend on the service-role secret; the migration intentionally allows
+ * anonymous SELECT access to this table.
+ */
+function createSupabaseReadClient() {
+  const SUPABASE_URL = process.env['SUPABASE_URL'] || process.env['VITE_SUPABASE_URL'];
+  const SUPABASE_PUBLISHABLE_KEY =
+    process.env['SUPABASE_PUBLISHABLE_KEY'] || process.env['VITE_SUPABASE_PUBLISHABLE_KEY'];
+
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+    throw new Error('Missing Supabase public environment variables for sensor reads.');
+  }
+
+  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    global: { fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY) },
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+  });
+}
+
 let _supabaseAdmin: ReturnType<typeof createSupabaseAdminClient> | undefined;
+let _supabaseRead: ReturnType<typeof createSupabaseReadClient> | undefined;
 
 // Server-side Supabase client with service role - bypasses RLS
 // SECURITY: Only use this for trusted server-side operations, never expose to client code
@@ -65,5 +86,12 @@ export const supabaseAdmin = new Proxy({} as ReturnType<typeof createSupabaseAdm
   get(_, prop, receiver) {
     if (!_supabaseAdmin) _supabaseAdmin = createSupabaseAdminClient();
     return Reflect.get(_supabaseAdmin, prop, receiver);
+  },
+});
+
+export const supabaseRead = new Proxy({} as ReturnType<typeof createSupabaseReadClient>, {
+  get(_, prop, receiver) {
+    if (!_supabaseRead) _supabaseRead = createSupabaseReadClient();
+    return Reflect.get(_supabaseRead, prop, receiver);
   },
 });

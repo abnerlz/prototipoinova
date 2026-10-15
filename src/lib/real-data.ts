@@ -37,6 +37,7 @@ export function sensorsFromReadings(rows: RealReading[]): Sensor[] {
   const chronological = [...rows].reverse();
   const latest = rows[0]!;
   const lastUpdate = new Date(latest.created_at).getTime();
+  const isFresh = Number.isFinite(lastUpdate) && Date.now() - lastUpdate <= 15_000;
 
   return SENSOR_TYPES.map((meta, index) => {
     const field = FIELD_BY_TYPE[meta.id];
@@ -47,15 +48,15 @@ export function sensorsFromReadings(rows: RealReading[]): Sensor[] {
 
     return {
       id: `${STATION.id}-${meta.id}`,
-      code: `${DEFAULT_SENSOR_ID}-${String(index + 1).padStart(2, "0")}`,
+      code: DEFAULT_SENSOR_ID,
       name: `${meta.label} · ${STATION.name}`,
       type: meta.id,
-      status: value === null ? "offline" : "online",
+      status: value === null || !isFresh ? "offline" : "online",
       municipalityId: STATION.municipalityId,
       neighborhoodId: STATION.id,
       position: STATION_COORDS,
-      battery: 100,
-      signal: 100,
+      battery: null,
+      signal: null,
       value: value ?? 0,
       unit: meta.unit,
       lastUpdate,

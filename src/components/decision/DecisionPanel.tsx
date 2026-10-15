@@ -49,9 +49,9 @@ export function DecisionPanel({
       <CardContent className="space-y-2">
         {!compact && (
           <div className="mb-1 flex flex-wrap gap-2 text-[11px]">
-            <Badge variant="outline" className="border-border/70">Chuva 24h: {rainfall} mm</Badge>
+            <Badge variant="outline" className="border-border/70">Chuva acumulada: {rainfall === null ? "sem dado validado" : `${rainfall} mm`}</Badge>
             <Badge variant="outline" className="border-border/70">Índice: {risk.score}</Badge>
-            <Badge variant="outline" className="border-border/70">Prob. 24h: {risk.probability24h}%</Badge>
+            <Badge variant="outline" className="border-border/70">Previsão 24h: não validada</Badge>
             <Badge variant="outline" className="border-border/70">Alertas 7d: {recentAlerts}</Badge>
           </div>
         )}

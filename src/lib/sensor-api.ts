@@ -7,6 +7,7 @@
  */
 
 export const DEFAULT_SENSOR_ID = "SENSOR-001";
+type SensorReadingRow = import("@/integrations/supabase/types").Database["public"]["Tables"]["sensor_readings"]["Row"];
 
 export interface SensorPayload {
   sensor_id: string;
@@ -152,16 +153,27 @@ export function validatePayload(raw: unknown): { ok: true; data: SensorPayload }
 /** POST /api/sensores — recebe uma leitura do ESP32. */
 export async function handleSensorPost(request: Request): Promise<Response> {
   const requiredKey = process.env["SENSOR_API_KEY"];
-  if (requiredKey) {
-    const provided = request.headers.get("x-api-key");
-    if (provided !== requiredKey) {
-      return json({ success: false, message: "Chave de API inválida ou ausente (header x-api-key)." }, 401);
-    }
+  if (!requiredKey) {
+    console.error("[sensor-api] SENSOR_API_KEY não configurada no servidor.");
+    return json({ success: false, message: "Recepção de sensores não configurada no servidor." }, 503);
+  }
+  const provided = request.headers.get("x-api-key");
+  if (provided !== requiredKey) {
+    return json({ success: false, message: "Chave de API inválida ou ausente (header x-api-key)." }, 401);
+  }
+
+  const contentLength = Number(request.headers.get("content-length") ?? 0);
+  if (contentLength > 8192) {
+    return json({ success: false, message: "Corpo da requisição excede o limite de 8 KB." }, 413);
   }
 
   let raw: unknown;
   try {
-    raw = await request.json();
+    const body = await request.text();
+    if (body.length > 8192) {
+      return json({ success: false, message: "Corpo da requisição excede o limite de 8 KB." }, 413);
+    }
+    raw = JSON.parse(body);
   } catch {
     return json({ success: false, message: "JSON inválido." }, 400);
   }
@@ -169,17 +181,31 @@ export async function handleSensorPost(request: Request): Promise<Response> {
   const result = validatePayload(raw);
   if (!result.ok) return json({ success: false, message: result.error }, 400);
 
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
-    .from("sensor_readings")
-    .insert(result.data)
-    .select("id, created_at, sensor_id")
-    .single();
+  if (result.data.sensor_id !== DEFAULT_SENSOR_ID) {
+    return json({ success: false, message: `Este protótipo está configurado para o sensor ${DEFAULT_SENSOR_ID}.` }, 422);
+  }
+
+  let data: { id: string; created_at: string; sensor_id: string } | null = null;
+  let error: unknown = null;
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const insertResult = await supabaseAdmin
+      .from("sensor_readings")
+      .insert(result.data)
+      .select("id, created_at, sensor_id")
+      .single();
+    data = insertResult.data;
+    error = insertResult.error;
+  } catch (cause) {
+    console.error("[sensor-api] conexão de gravação Supabase não configurada.", cause);
+    return json({ success: false, message: "Banco não configurado para receber leituras." }, 503);
+  }
 
   if (error) {
     console.error("[sensor-api] falha ao gravar leitura", error);
     return json({ success: false, message: "Não foi possível gravar a leitura." }, 500);
   }
+  if (!data) return json({ success: false, message: "O banco não confirmou a gravação." }, 500);
 
   return json(
     {
@@ -194,16 +220,28 @@ export async function handleSensorPost(request: Request): Promise<Response> {
 
 /** GET /api/sensores/:id/latest */
 export async function handleLatest(sensorId: string): Promise<Response> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
-    .from("sensor_readings")
-    .select("*")
-    .eq("sensor_id", sensorId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  let data: Pick<SensorReadingRow, "sensor_id" | "temperatura" | "umidade_ar" | "umidade_solo" | "inclinacao" | "vibracao" | "chuva" | "created_at"> | null = null;
+  let error: { message: string } | null = null;
+  try {
+    const { supabaseRead } = await import("@/integrations/supabase/client.server");
+    const result = await supabaseRead
+      .from("sensor_readings")
+      .select("sensor_id, temperatura, umidade_ar, umidade_solo, inclinacao, vibracao, chuva, created_at")
+      .eq("sensor_id", sensorId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    data = result.data;
+    error = result.error;
+  } catch (cause) {
+    console.error("[sensor-api] consulta Supabase não configurada.", cause);
+    return json({ success: false, message: "Banco não configurado para consulta." }, 503);
+  }
 
-  if (error) return json({ success: false, message: "Erro ao consultar a última leitura." }, 500);
+  if (error) {
+    console.error("[sensor-api] falha ao consultar última leitura", error);
+    return json({ success: false, message: "Erro ao consultar a última leitura." }, 500);
+  }
   if (!data) return json({ success: false, message: "Aguardando dados do sensor..." }, 404);
 
   const { status } = computeStatus(data);
@@ -225,15 +263,27 @@ export async function handleHistory(sensorId: string, url: URL): Promise<Respons
   const raw = Number(url.searchParams.get("limit") ?? 100);
   const limit = Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 1), 1000) : 100;
 
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
-    .from("sensor_readings")
-    .select("*")
-    .eq("sensor_id", sensorId)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+  let data: SensorReadingRow[] = [];
+  let error: { message: string } | null = null;
+  try {
+    const { supabaseRead } = await import("@/integrations/supabase/client.server");
+    const result = await supabaseRead
+      .from("sensor_readings")
+      .select("id, sensor_id, temperatura, umidade_ar, umidade_solo, inclinacao, vibracao, chuva, created_at")
+      .eq("sensor_id", sensorId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    data = result.data ?? [];
+    error = result.error;
+  } catch (cause) {
+    console.error("[sensor-api] consulta Supabase não configurada.", cause);
+    return json({ success: false, message: "Banco não configurado para consulta." }, 503);
+  }
 
-  if (error) return json({ success: false, message: "Erro ao consultar o histórico." }, 500);
+  if (error) {
+    console.error("[sensor-api] falha ao consultar histórico", error);
+    return json({ success: false, message: "Erro ao consultar o histórico." }, 500);
+  }
 
   return json({
     sensor_id: sensorId,

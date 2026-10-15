@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMonitoring } from "@/context/MonitoringContext";
 import { NEIGHBORHOODS, getMunicipality } from "@/data/regions";
 import { assessRisk } from "@/lib/ai";
-import { aiConfidence, explainClassification } from "@/lib/intelligence";
+import { explainClassification } from "@/lib/intelligence";
 
 export const Route = createFileRoute("/central-inteligencia")({
   head: () => ({
@@ -41,7 +41,6 @@ function IntelligenceCenterPage() {
 
   const scoped = sensorsIn(filters.municipalityId, filters.neighborhoodId, filters.sensorType);
   const risk = assessRisk(scoped);
-  const confidence = aiConfidence(scoped, risk);
 
   const scopeLabel =
     filters.neighborhoodId !== "all"
@@ -85,7 +84,6 @@ function IntelligenceCenterPage() {
       </div>
 
       <AiProcessingStrip
-        confidence={confidence}
         scopeLabel={scopeLabel}
         sensorsOnline={scoped.filter((s) => s.status === "online").length}
         cycles={cycles}
@@ -106,7 +104,7 @@ function IntelligenceCenterPage() {
               <RiskGauge score={risk.score} size={150} label="Índice combinado" />
               <RiskBadge level={risk.level} />
               <p className="text-center text-xs text-muted-foreground">
-                Probabilidade em 24h: <strong className="text-foreground">{risk.probability24h}%</strong> · tendência{" "}
+                Previsão em 24h: <strong className="text-foreground">não validada</strong> · tendência{" "}
                 {risk.trend}
               </p>
             </CardContent>

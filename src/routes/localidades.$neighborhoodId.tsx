@@ -83,7 +83,7 @@ function LocalidadePage() {
                 <p className="text-[11px] text-muted-foreground">mm em 24h</p>
               </div>
               <div className="rounded-lg border border-border/50 bg-secondary/20 p-3">
-                <p className="font-display text-2xl font-bold tabular-nums">{risk.probability24h}%</p>
+                <p className="font-display text-2xl font-bold tabular-nums">Não validada</p>
                 <p className="text-[11px] text-muted-foreground">prob. de ocorrência</p>
               </div>
             </CardContent>

@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 
 import { RiskBadge } from "@/components/common/RiskGauge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { useMonitoring } from "@/context/MonitoringContext";
-import { aiConfidence, buildPipeline, explainClassification } from "@/lib/intelligence";
+import { buildPipeline, explainClassification } from "@/lib/intelligence";
 import { cn } from "@/lib/utils";
 import type { RiskAssessment, Sensor } from "@/types";
 
@@ -24,8 +23,7 @@ export function AiAnalysisPanel({
   scopeLabel: string;
 }) {
   const { lastTick } = useMonitoring();
-  const confidence = aiConfidence(sensors, risk);
-  const steps = buildPipeline(sensors, risk, confidence);
+  const steps = buildPipeline(sensors, risk);
   const [cursor, setCursor] = useState(steps.length - 1);
 
   // A cada ciclo de leitura a IA "reprocessa" a cadeia de análise.
@@ -101,20 +99,7 @@ export function AiAnalysisPanel({
           })}
         </ol>
 
-        <div>
-          <p className="mb-1 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Confiança da IA</span>
-            <motion.span
-              key={confidence}
-              initial={{ opacity: 0.4 }}
-              animate={{ opacity: 1 }}
-              className="font-display tabular-nums font-semibold"
-            >
-              {confidence}%
-            </motion.span>
-          </p>
-          <Progress value={confidence} className="h-1.5" />
-        </div>
+        <p className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">Confiabilidade do modelo: ainda não validada com dados de campo.</p>
 
         <p className="rounded-lg border border-border/50 bg-secondary/25 p-3 text-sm text-muted-foreground">
           {explainClassification(risk, sensors)}
