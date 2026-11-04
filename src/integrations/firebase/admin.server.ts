@@ -1,7 +1,8 @@
-import { applicationDefault, cert, getApps, initializeApp } from "firebase-admin/app";
-import { getDatabase, type Database, type Reference } from "firebase-admin/database";
+import type { App } from "firebase-admin/app";
+import type { Database, Reference } from "firebase-admin/database";
 
-function getFirebaseAdminApp() {
+async function getFirebaseAdminApp(): Promise<App> {
+  const { applicationDefault, cert, getApps, initializeApp } = await import("firebase-admin/app");
   const existing = getApps().find((candidate) => candidate.name === "geoalerta-server");
   if (existing) return existing;
 
@@ -16,7 +17,8 @@ function getFirebaseAdminApp() {
   return initializeApp({ credential, databaseURL }, "geoalerta-server");
 }
 
-export function getSensorReadingsReference(): Reference {
-  const database: Database = getDatabase(getFirebaseAdminApp());
+export async function getSensorReadingsReference(): Promise<Reference> {
+  const { getDatabase } = await import("firebase-admin/database");
+  const database: Database = getDatabase(await getFirebaseAdminApp());
   return database.ref("sensor_readings");
 }

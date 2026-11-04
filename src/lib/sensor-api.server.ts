@@ -31,7 +31,7 @@ function parseSensorReading(id: string, value: unknown): SensorReadingRow | null
 }
 
 async function loadSensorReadings(sensorId: string, limit: number): Promise<SensorReadingRow[]> {
-  const snapshot = await getSensorReadingsReference()
+  const snapshot = await (await getSensorReadingsReference())
     .orderByChild("sensor_id")
     .equalTo(sensorId)
     .limitToLast(limit)
@@ -83,7 +83,7 @@ export async function handleSensorPost(request: Request): Promise<Response> {
 
   try {
     const reading = { ...result.data, created_at: new Date().toISOString() };
-    await getSensorReadingsReference().push().set(reading);
+    await (await getSensorReadingsReference()).push().set(reading);
     return json(
       {
         success: true,
