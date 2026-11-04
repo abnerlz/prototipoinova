@@ -31,7 +31,7 @@ Cada leitura fica como um filho de `/sensor_readings`, criado com uma chave `pus
 
 ```json
 {
-  "sensor_id": "SENSOR-001",
+  "sensor_id": "bancada_esp32_01",
   "umidade_solo": 55,
   "inclinacao": 1.2,
   "vibracao": 0.1,
@@ -40,12 +40,12 @@ Cada leitura fica como um filho de `/sensor_readings`, criado com uma chave `pus
 }
 ```
 
-Leituras enviadas pelo app incluem `created_at` em ISO 8601. Para fontes externas, use o mesmo formato e chaves push, garantindo ordenação eficiente e compatibilidade com o painel.
+Leituras novas devem incluir `created_at` em ISO 8601. Para dados antigos sem esse campo, o painel recupera o horário de criação da chave push do Firebase.
 
 ## Diagnóstico
 
 - **Banco conectado**: o navegador conseguiu consultar o caminho `/sensor_readings`.
-- **Banco sem dados**: a conexão funcionou, mas ainda não há leituras para `SENSOR-001`.
+- **Banco sem dados**: a conexão funcionou, mas ainda não há leituras para `bancada_esp32_01`.
 - **Erro no banco**: confira URL, regras públicas de leitura e índice `sensor_id`.
 - **Recepção de sensores não configurada**: configure `SENSOR_API_KEY` no servidor.
 - **Banco não configurado para receber leituras**: confira `FIREBASE_DATABASE_URL` e as credenciais do Admin SDK.

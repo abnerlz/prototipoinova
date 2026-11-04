@@ -157,7 +157,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ) : null}
             {mode === "real" && (
               <div role="note" className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2 text-xs text-muted-foreground">
-                Cobertura real configurada neste protótipo: uma unidade (SENSOR-001) no Ibura. As demais áreas ainda não têm sensores conectados; os mapas e índices regionais não representam cobertura real.
+                Cobertura real configurada neste protótipo: uma unidade (bancada_esp32_01) no Ibura. As demais áreas ainda não têm sensores conectados; os mapas e índices regionais não representam cobertura real.
               </div>
             )}
             {mode === "real" && databaseConnection === "conectado" && sensors.length > 0 && sensors.every((sensor) => sensor.status === "offline") && (

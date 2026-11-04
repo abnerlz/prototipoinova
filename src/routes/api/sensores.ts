@@ -14,7 +14,7 @@ export const Route = createFileRoute("/api/sensores")({
           method: "POST",
           content_type: "application/json",
           exemplo: {
-            sensor_id: "SENSOR-001",
+            sensor_id: "bancada_esp32_01",
             umidade_solo: 64,
             inclinacao: 3.2,
             vibracao: 0.18,

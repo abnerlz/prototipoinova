@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
-import { equalTo, limitToLast, onValue, orderByChild, query, ref } from "firebase/database";
+import { limitToLast, onValue, orderByKey, query, ref } from "firebase/database";
 
 import { MUNICIPALITIES, NEIGHBORHOODS, getNeighborhood } from "@/data/regions";
 import { realtimeDatabase } from "@/integrations/firebase/client";
 import { DEFAULT_SENSOR_ID, computeStatus, type LocalStatus } from "@/lib/sensor-api";
-import { sensorsFromReadings, type RealReading } from "@/lib/real-data";
+import { parseFirebaseReading, sensorsFromReadings, type RealReading } from "@/lib/real-data";
 import { RISK_LABEL, assessRisk } from "@/lib/ai";
 import {
   createInitialStates,
@@ -156,20 +156,18 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (mode !== "real") return;
     let cancelled = false;
-    const readingsQuery = query(
-      ref(realtimeDatabase, "sensor_readings"),
-      orderByChild("sensor_id"),
-      equalTo(DEFAULT_SENSOR_ID),
-      limitToLast(300),
-    );
+    // The database already uses Firebase push IDs, which sort by creation time.
+    // Read a bounded window by key, then filter locally so this keeps working
+    // even before the optional sensor_id index is deployed.
+    const readingsQuery = query(ref(realtimeDatabase, "sensor_readings"), orderByKey(), limitToLast(1000));
     const unsubscribe = onValue(
       readingsQuery,
       (snapshot) => {
         if (cancelled) return;
         const rows: RealReading[] = [];
         snapshot.forEach((child) => {
-          const value = child.val() as Omit<RealReading, "id"> | null;
-          if (value) rows.push({ ...value, id: child.key ?? "" });
+          const row = parseFirebaseReading(child.key ?? "", child.val());
+          if (row?.sensor_id === DEFAULT_SENSOR_ID) rows.push(row);
           return false;
         });
         rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
