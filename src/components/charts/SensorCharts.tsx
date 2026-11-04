@@ -29,7 +29,9 @@ export function buildSeries(sensors: Sensor[], period: string, types?: SensorTyp
   const wanted = types ?? Array.from(new Set(sensors.map((s) => s.type)));
   const now = Date.now();
   const cutoff = now - (PERIOD_HOURS[period] ?? 24) * 3_600_000;
-  const bucketMs = period === "24h" ? 3_600_000 : period === "7d" ? 6 * 3_600_000 : 24 * 3_600_000;
+  // No período curto, preserve cada medição para que o traçado acompanhe o
+  // valor atual. Períodos longos continuam agregados para manter o gráfico leve.
+  const bucketMs = period === "24h" ? 1 : period === "7d" ? 3_600_000 : 6 * 3_600_000;
   const buckets = new Map<number, Map<SensorType, { sum: number; count: number }>>();
   for (const sensor of sensors) {
     if (!wanted.includes(sensor.type)) continue;
@@ -71,6 +73,20 @@ const tooltipStyle = {
   color: "var(--popover-foreground)",
 } as const;
 
+function formatAxisTime(timestamp: number, period: string): string {
+  const date = new Date(timestamp);
+  return period === "24h"
+    ? date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+
+function formatTooltipTime(value: unknown): string {
+  const timestamp = Number(value);
+  return Number.isFinite(timestamp)
+    ? new Date(timestamp).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "medium" })
+    : String(value);
+}
+
 export function MultiSensorChart({
   sensors,
   period,
@@ -96,14 +112,24 @@ export function MultiSensorChart({
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
         <CartesianGrid stroke="var(--border)" strokeDasharray="3 6" vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} minTickGap={24} />
+        <XAxis
+          dataKey="timestamp"
+          type="number"
+          scale="time"
+          domain={["dataMin", "dataMax"]}
+          tickFormatter={(value: number) => formatAxisTime(value, period)}
+          tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+          tickLine={false}
+          axisLine={false}
+          minTickGap={24}
+        />
         <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} width={44} />
-        <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "var(--muted-foreground)" }} />
+        <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "var(--muted-foreground)" }} labelFormatter={formatTooltipTime} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
         {keys.map((key) => (
           <Line
             key={key}
-            type="monotone"
+            type="linear"
             dataKey={key}
             name={`${getSensorMeta(key).label} (${getSensorMeta(key).unit})`}
             stroke={COLORS[key]}
@@ -139,11 +165,21 @@ export function SingleSensorChart({
           </linearGradient>
         </defs>
         <CartesianGrid stroke="var(--border)" strokeDasharray="3 6" vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} minTickGap={24} />
+        <XAxis
+          dataKey="timestamp"
+          type="number"
+          scale="time"
+          domain={["dataMin", "dataMax"]}
+          tickFormatter={(value: number) => formatAxisTime(value, period)}
+          tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+          tickLine={false}
+          axisLine={false}
+          minTickGap={24}
+        />
         <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} width={44} />
         <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v} ${meta.unit}`, meta.label]} />
         <Area
-          type="monotone"
+          type="linear"
           dataKey={sensor.type}
           stroke={COLORS[sensor.type]}
           strokeWidth={2}
