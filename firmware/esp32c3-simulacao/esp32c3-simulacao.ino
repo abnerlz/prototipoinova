@@ -7,7 +7,7 @@
 
 #include "secrets.h"
 
-const char* SENSOR_ID = "SENSOR-001";
+const char* SENSOR_ID = "bancada_esp32_01";
 constexpr unsigned long SEND_INTERVAL_MS = 5000;
 
 unsigned long lastSendAt = 0;

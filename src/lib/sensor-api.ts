@@ -6,7 +6,7 @@
  * `sensor-api.server.ts`.
  */
 
-export const DEFAULT_SENSOR_ID = "SENSOR-001";
+export const DEFAULT_SENSOR_ID = "bancada_esp32_01";
 export interface SensorReadingRow {
   id: string;
   sensor_id: string;

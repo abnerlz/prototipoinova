@@ -7,7 +7,7 @@ O ESP32 envia leituras diretamente para o Realtime Database. O painel publicado 
 1. Em **Authentication → Sign-in method**, habilite **Email/Password**.
 2. Em **Authentication → Users**, crie um usuário exclusivo para o ESP32.
 3. Edite `firebase/database.rules.json`: substitua `esp32-device@example.com` pelo e-mail exato desse usuário.
-4. Publique essas regras em **Realtime Database → Rules**. Elas mantêm a leitura do painel e só permitem ao usuário do sensor criar novas leituras de `SENSOR-001`.
+4. Publique essas regras em **Realtime Database → Rules**. Elas mantêm a leitura do painel e só permitem ao usuário do sensor criar novas leituras de `bancada_esp32_01`.
 5. Copie a Web API Key em **Project settings → General → Web API Key**. Essa chave identifica o projeto; a senha do usuário do dispositivo é que deve permanecer privada.
 
 ## Configuração do Arduino

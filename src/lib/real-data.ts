@@ -18,6 +18,55 @@ export interface RealReading {
   created_at: string;
 }
 
+const FIREBASE_PUSH_CHARS = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
+
+function timestampFromPushId(id: string): number | null {
+  if (id.length !== 20) return null;
+  let timestamp = 0;
+  for (const char of id.slice(0, 8)) {
+    const digit = FIREBASE_PUSH_CHARS.indexOf(char);
+    if (digit < 0) return null;
+    timestamp = timestamp * 64 + digit;
+  }
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function normalizeTimestamp(value: unknown, id: string): string | null {
+  let timestamp: number | null = null;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Date.parse(value);
+    if (Number.isFinite(parsed)) timestamp = parsed;
+  } else if (typeof value === "number" && Number.isFinite(value)) {
+    timestamp = value < 1_000_000_000_000 ? value * 1000 : value;
+  }
+  timestamp ??= timestampFromPushId(id);
+  return timestamp === null ? null : new Date(timestamp).toISOString();
+}
+
+/** Converts the Firebase record shape used by the ESP32 into a safe panel row. */
+export function parseFirebaseReading(id: string, value: unknown): RealReading | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const row = value as Record<string, unknown>;
+  if (typeof row["sensor_id"] !== "string") return null;
+
+  const numberField = (field: string): number | null => {
+    const fieldValue = row[field];
+    return typeof fieldValue === "number" && Number.isFinite(fieldValue) ? fieldValue : null;
+  };
+  const createdAt = normalizeTimestamp(row["created_at"] ?? row["timestamp"], id);
+  if (!createdAt) return null;
+
+  return {
+    id,
+    sensor_id: row["sensor_id"],
+    umidade_solo: numberField("umidade_solo"),
+    inclinacao: numberField("inclinacao"),
+    vibracao: numberField("vibracao"),
+    chuva: numberField("chuva"),
+    created_at: createdAt,
+  };
+}
+
 const FIELD_BY_TYPE: Record<SensorType, keyof RealReading> = {
   pluviosidade: "chuva",
   umidade: "umidade_solo",
