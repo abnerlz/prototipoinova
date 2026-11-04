@@ -24,11 +24,10 @@ export const Route = createFileRoute("/ia")({
 });
 
 const WEIGHTS = [
-  { label: "Chuva acumulada", weight: 30 },
-  { label: "Umidade do solo", weight: 25 },
-  { label: "Inclinação da encosta", weight: 20 },
-  { label: "Deslocamento do terreno", weight: 15 },
-  { label: "Vibração e temperatura", weight: 10 },
+  { label: "Chuva acumulada", weight: 24 },
+  { label: "Umidade do solo", weight: 26 },
+  { label: "Inclinação da encosta", weight: 28 },
+  { label: "Vibração", weight: 22 },
 ];
 
 function IaPage() {

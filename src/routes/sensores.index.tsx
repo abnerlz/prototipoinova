@@ -11,7 +11,7 @@ export const Route = createFileRoute("/sensores/")({
   head: () => ({
     meta: [
       { title: "Rede de Sensores — GeoAlerta RMR" },
-      { name: "description", content: "Status, bateria, sinal e leituras dos sensores de pluviosidade, umidade, temperatura, vibração, inclinação e deslocamento." },
+      { name: "description", content: "Status, bateria, sinal e leituras dos sensores de pluviosidade, umidade do solo, vibração e inclinação." },
       { property: "og:title", content: "Rede de Sensores — GeoAlerta RMR" },
       { property: "og:description", content: "Telemetria em tempo real das encostas monitoradas." },
     ],

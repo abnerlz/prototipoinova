@@ -11,8 +11,6 @@ import type { Sensor, SensorReading, SensorType } from "@/types";
 export interface RealReading {
   id: string;
   sensor_id: string;
-  temperatura: number | null;
-  umidade_ar: number | null;
   umidade_solo: number | null;
   inclinacao: number | null;
   vibracao: number | null;
@@ -23,8 +21,6 @@ export interface RealReading {
 const FIELD_BY_TYPE: Record<SensorType, keyof RealReading> = {
   pluviosidade: "chuva",
   umidade: "umidade_solo",
-  umidade_ar: "umidade_ar",
-  temperatura: "temperatura",
   inclinacao: "inclinacao",
   vibracao: "vibracao",
 };

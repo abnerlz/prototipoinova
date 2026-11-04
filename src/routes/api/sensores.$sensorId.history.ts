@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { handleHistory, preflight } from "@/lib/sensor-api";
+import { preflight } from "@/lib/sensor-api";
+import { handleHistory } from "@/lib/sensor-api.server";
 
 export const Route = createFileRoute("/api/sensores/$sensorId/history")({
   server: {

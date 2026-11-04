@@ -54,14 +54,15 @@ function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-sidebar-border">
       <SidebarContent className="pt-3">
-        <div className="mb-2 flex items-center gap-2 px-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+        <div className="mb-3 flex items-center justify-center px-3 group-data-[collapsible=icon]:px-1">
+          <img
+            src="/proterra-logo.jpeg"
+            alt="ProTerra"
+            className="h-auto w-full max-w-[168px] rounded-md group-data-[collapsible=icon]:hidden"
+          />
+          <span className="hidden h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary group-data-[collapsible=icon]:grid">
             <Radio className="h-5 w-5" />
           </span>
-          <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="font-display truncate text-sm font-bold leading-tight">GeoAlerta RMR</p>
-            <p className="truncate text-[11px] text-muted-foreground">Centro de Operações</p>
-          </div>
         </div>
 
         <SidebarGroup>
@@ -147,7 +148,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             ) : databaseConnection === "erro" ? (
               <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive">
-                Não foi possível ler os sensores no banco. {databaseError ? `Detalhe: ${databaseError}` : "Verifique a conexão e as permissões do Supabase."}
+                Não foi possível ler os sensores no banco. {databaseError ? `Detalhe: ${databaseError}` : "Verifique a conexão e as regras do Firebase Realtime Database."}
               </div>
             ) : databaseConnection === "sem_dados" ? (
               <div role="status" className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-900 dark:text-amber-200">

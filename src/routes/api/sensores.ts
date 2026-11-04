@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { handleSensorPost, json, preflight } from "@/lib/sensor-api";
+import { json, preflight } from "@/lib/sensor-api";
+import { handleSensorPost } from "@/lib/sensor-api.server";
 
 export const Route = createFileRoute("/api/sensores")({
   server: {
@@ -14,8 +15,6 @@ export const Route = createFileRoute("/api/sensores")({
           content_type: "application/json",
           exemplo: {
             sensor_id: "SENSOR-001",
-            temperatura: 28.5,
-            umidade_ar: 78,
             umidade_solo: 64,
             inclinacao: 3.2,
             vibracao: 0.18,

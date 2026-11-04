@@ -19,12 +19,10 @@ const norm = (value: number, min: number, max: number) =>
   Math.max(0, Math.min(1, (value - min) / (max - min)));
 
 const MODEL: Weightings[] = [
-  { type: "pluviosidade", weight: 0.22, normalize: (v) => norm(v, 2, 60) },
-  { type: "umidade", weight: 0.24, normalize: (v) => norm(v, 45, 95) },
-  { type: "inclinacao", weight: 0.26, normalize: (v) => norm(v, 3, 18) },
-  { type: "vibracao", weight: 0.2, normalize: (v) => norm(v, 1, 12) },
-  { type: "umidade_ar", weight: 0.05, normalize: (v) => norm(v, 60, 98) },
-  { type: "temperatura", weight: 0.03, normalize: (v) => 1 - norm(v, 20, 36) },
+  { type: "pluviosidade", weight: 0.24, normalize: (v) => norm(v, 2, 60) },
+  { type: "umidade", weight: 0.26, normalize: (v) => norm(v, 45, 95) },
+  { type: "inclinacao", weight: 0.28, normalize: (v) => norm(v, 3, 18) },
+  { type: "vibracao", weight: 0.22, normalize: (v) => norm(v, 1, 12) },
 ];
 
 export function riskLevelFromScore(score: number): RiskLevel {

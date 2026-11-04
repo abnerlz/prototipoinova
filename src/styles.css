@@ -64,49 +64,49 @@
 :root,
 .dark {
   --radius: 0.75rem;
-  --background: oklch(0.17 0.024 249);
-  --foreground: oklch(0.95 0.008 240);
-  --card: oklch(0.216 0.026 250);
-  --card-foreground: oklch(0.95 0.008 240);
-  --popover: oklch(0.208 0.026 250);
-  --popover-foreground: oklch(0.95 0.008 240);
-  --primary: oklch(0.78 0.14 190);
-  --primary-foreground: oklch(0.17 0.03 235);
-  --secondary: oklch(0.28 0.03 250);
-  --secondary-foreground: oklch(0.93 0.01 240);
-  --muted: oklch(0.26 0.027 250);
-  --muted-foreground: oklch(0.69 0.023 248);
-  --accent: oklch(0.32 0.05 235);
-  --accent-foreground: oklch(0.95 0.01 240);
+  --background: oklch(0.17 0.026 184);
+  --foreground: oklch(0.95 0.008 155);
+  --card: oklch(0.216 0.026 180);
+  --card-foreground: oklch(0.95 0.008 155);
+  --popover: oklch(0.208 0.026 180);
+  --popover-foreground: oklch(0.95 0.008 155);
+  --primary: oklch(0.73 0.18 145);
+  --primary-foreground: oklch(0.17 0.03 180);
+  --secondary: oklch(0.28 0.03 180);
+  --secondary-foreground: oklch(0.93 0.01 155);
+  --muted: oklch(0.26 0.027 180);
+  --muted-foreground: oklch(0.72 0.023 170);
+  --accent: oklch(0.32 0.06 150);
+  --accent-foreground: oklch(0.95 0.01 155);
   --destructive: oklch(0.61 0.2 25);
-  --destructive-foreground: oklch(0.97 0.01 240);
-  --border: oklch(0.32 0.028 250);
-  --input: oklch(0.3 0.028 250);
-  --ring: oklch(0.78 0.14 190);
+  --destructive-foreground: oklch(0.97 0.01 155);
+  --border: oklch(0.32 0.028 180);
+  --input: oklch(0.3 0.028 180);
+  --ring: oklch(0.73 0.18 145);
 
-  --surface: oklch(0.23 0.026 250 / 72%);
-  --surface-strong: oklch(0.26 0.03 250 / 92%);
+  --surface: oklch(0.23 0.026 180 / 72%);
+  --surface-strong: oklch(0.26 0.03 180 / 92%);
 
   --risk-low: oklch(0.76 0.17 152);
   --risk-medium: oklch(0.85 0.16 92);
   --risk-high: oklch(0.75 0.17 55);
   --risk-critical: oklch(0.65 0.21 25);
 
-  --chart-1: oklch(0.78 0.14 190);
+  --chart-1: oklch(0.73 0.18 145);
   --chart-2: oklch(0.76 0.17 152);
-  --chart-3: oklch(0.85 0.16 92);
+  --chart-3: oklch(0.68 0.13 190);
   --chart-4: oklch(0.75 0.17 55);
   --chart-5: oklch(0.65 0.21 25);
-  --chart-6: oklch(0.7 0.14 285);
+  --chart-6: oklch(0.72 0.13 205);
 
-  --sidebar: oklch(0.19 0.025 250);
-  --sidebar-foreground: oklch(0.92 0.01 240);
-  --sidebar-primary: oklch(0.78 0.14 190);
-  --sidebar-primary-foreground: oklch(0.17 0.03 235);
-  --sidebar-accent: oklch(0.27 0.03 250);
-  --sidebar-accent-foreground: oklch(0.95 0.01 240);
-  --sidebar-border: oklch(0.29 0.028 250);
-  --sidebar-ring: oklch(0.78 0.14 190);
+  --sidebar: oklch(0.19 0.025 182);
+  --sidebar-foreground: oklch(0.92 0.01 155);
+  --sidebar-primary: oklch(0.73 0.18 145);
+  --sidebar-primary-foreground: oklch(0.17 0.03 180);
+  --sidebar-accent: oklch(0.27 0.04 165);
+  --sidebar-accent-foreground: oklch(0.95 0.01 155);
+  --sidebar-border: oklch(0.29 0.028 180);
+  --sidebar-ring: oklch(0.73 0.18 145);
 }
 
 @layer base {
@@ -119,8 +119,8 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     background-image:
-      radial-gradient(circle at 12% -10%, oklch(0.4 0.09 195 / 22%), transparent 45%),
-      radial-gradient(circle at 88% 0%, oklch(0.4 0.1 265 / 18%), transparent 40%);
+      radial-gradient(circle at 12% -10%, oklch(0.4 0.11 145 / 20%), transparent 45%),
+      radial-gradient(circle at 88% 0%, oklch(0.36 0.08 185 / 18%), transparent 40%);
     background-attachment: fixed;
   }
 
@@ -199,7 +199,7 @@
 
 /* Leaflet em tema escuro */
 .leaflet-container {
-  background: oklch(0.15 0.02 250);
+  background: var(--background);
   font-family: var(--font-sans);
 }
 .leaflet-tile {
@@ -207,17 +207,17 @@
 }
 .leaflet-control-zoom a,
 .leaflet-bar a {
-  background: oklch(0.24 0.03 250) !important;
-  color: oklch(0.92 0.01 240) !important;
-  border-color: oklch(0.32 0.028 250) !important;
+  background: var(--card) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
 }
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
-  background: oklch(0.22 0.03 250);
-  color: oklch(0.94 0.01 240);
+  background: var(--card);
+  color: var(--foreground);
   border-radius: 12px;
 }
 .leaflet-control-attribution {
-  background: oklch(0.2 0.02 250 / 70%) !important;
-  color: oklch(0.7 0.02 248) !important;
+  background: var(--surface-strong) !important;
+  color: var(--muted-foreground) !important;
 }

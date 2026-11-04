@@ -28,7 +28,7 @@ export const NEIGHBORHOODS: Neighborhood[] = [
 
 export const STATION = NEIGHBORHOODS[0];
 
-/** Os seis sensores existentes no protótipo físico. */
+/** Os quatro tipos de sensor mantidos no protótipo. */
 export const SENSOR_TYPES: {
   id: SensorType;
   label: string;
@@ -40,8 +40,6 @@ export const SENSOR_TYPES: {
 }[] = [
   { id: "pluviosidade", label: "Pluviosidade", unit: "mm/h", min: 0, max: 80, icon: "CloudRain", emoji: "🌧️" },
   { id: "umidade", label: "Umidade do Solo", unit: "%", min: 10, max: 100, icon: "Droplets", emoji: "🌱" },
-  { id: "umidade_ar", label: "Umidade do Ar", unit: "%", min: 20, max: 100, icon: "Waves", emoji: "💧" },
-  { id: "temperatura", label: "Temperatura", unit: "°C", min: 18, max: 40, icon: "Thermometer", emoji: "🌡️" },
   { id: "inclinacao", label: "Inclinação", unit: "°", min: 0, max: 25, icon: "TriangleRight", emoji: "📐" },
   { id: "vibracao", label: "Vibração", unit: "mm/s", min: 0, max: 20, icon: "Activity", emoji: "📳" },
 ];

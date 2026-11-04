@@ -59,8 +59,6 @@ export function buildSeries(sensors: Sensor[], period: string, types?: SensorTyp
 const COLORS: Record<SensorType, string> = {
   pluviosidade: "var(--chart-1)",
   umidade: "var(--chart-2)",
-  temperatura: "var(--chart-3)",
-  umidade_ar: "var(--chart-5)",
   vibracao: "var(--chart-6)",
   inclinacao: "var(--chart-4)",
 };
