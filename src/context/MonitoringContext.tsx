@@ -1,9 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
+import { equalTo, limitToLast, onValue, orderByChild, query, ref } from "firebase/database";
 
 import { MUNICIPALITIES, NEIGHBORHOODS, getNeighborhood } from "@/data/regions";
-import { supabase } from "@/integrations/supabase/client";
+import { realtimeDatabase } from "@/integrations/firebase/client";
 import { DEFAULT_SENSOR_ID, computeStatus, type LocalStatus } from "@/lib/sensor-api";
 import { sensorsFromReadings, type RealReading } from "@/lib/real-data";
 import { RISK_LABEL, assessRisk } from "@/lib/ai";
@@ -155,37 +156,39 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (mode !== "real") return;
     let cancelled = false;
-    let timer: number | undefined;
-
-    const load = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("sensor_readings")
-          .select("id, sensor_id, temperatura, umidade_ar, umidade_solo, inclinacao, vibracao, chuva, created_at")
-          .eq("sensor_id", DEFAULT_SENSOR_ID)
-          .order("created_at", { ascending: false })
-          .limit(300);
+    const readingsQuery = query(
+      ref(realtimeDatabase, "sensor_readings"),
+      orderByChild("sensor_id"),
+      equalTo(DEFAULT_SENSOR_ID),
+      limitToLast(300),
+    );
+    const unsubscribe = onValue(
+      readingsQuery,
+      (snapshot) => {
         if (cancelled) return;
-        if (error) throw error;
-        const rows = (data ?? []) as RealReading[];
+        const rows: RealReading[] = [];
+        snapshot.forEach((child) => {
+          const value = child.val() as Omit<RealReading, "id"> | null;
+          if (value) rows.push({ ...value, id: child.key ?? "" });
+          return false;
+        });
+        rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
         setRealReadings(rows);
         setDatabaseConnection(rows.length ? "conectado" : "sem_dados");
         setDatabaseError(null);
         setLastTick(Date.now());
-      } catch (cause) {
+      },
+      (cause) => {
         if (cancelled) return;
-        console.error("[monitoramento] falha ao consultar banco", cause);
+        console.error("[monitoramento] falha ao consultar Firebase Realtime Database", cause);
         setDatabaseConnection("erro");
-        setDatabaseError(cause instanceof Error ? cause.message : "Não foi possível consultar o banco.");
-      } finally {
-        if (!cancelled) timer = window.setTimeout(() => void load(), 5000);
-      }
-    };
+        setDatabaseError(cause.message || "Não foi possível consultar o banco.");
+      },
+    );
 
-    void load();
     return () => {
       cancelled = true;
-      if (timer !== undefined) window.clearTimeout(timer);
+      unsubscribe();
     };
   }, [mode]);
 

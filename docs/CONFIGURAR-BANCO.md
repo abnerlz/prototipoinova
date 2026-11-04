@@ -1,32 +1,53 @@
-# Configurar a conexão com o banco
+# Configurar o Firebase Realtime Database
 
-O site consulta `sensor_readings` com a chave pública do Supabase. A tabela já permite leitura pública pela política RLS da migração em `supabase/migrations`. A gravação do ESP32 usa uma rota do servidor e precisa de duas chaves privadas.
+O modo real lê `/sensor_readings` em tempo real pelo SDK Web do Firebase. O ESP32 envia novas leituras para `POST /api/sensores`; a rota valida `SENSOR_API_KEY` e grava com o Firebase Admin SDK. As rotas de consulta usam a mesma conta de serviço no servidor.
 
-## No Vercel
+## Variáveis de ambiente
 
-Em **Settings → Environment Variables**, configure estas variáveis para o ambiente publicado:
+Configure estas variáveis no `.env.local` durante o desenvolvimento e no provedor de deploy:
 
-| Variável | Uso |
-| --- | --- |
-| `VITE_SUPABASE_URL` | endereço do projeto Supabase usado pelo site |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | chave pública usada pelo navegador |
-| `SUPABASE_URL` | endereço do projeto usado pelas rotas do servidor |
-| `SUPABASE_PUBLISHABLE_KEY` | chave pública usada pelas consultas da API |
-| `SUPABASE_SERVICE_ROLE_KEY` | chave secreta usada apenas pelo servidor para gravar leituras |
-| `SENSOR_API_KEY` | segredo compartilhado entre o ESP32 e a rota de gravação |
+| Variável | Onde é usada | Valor |
+| --- | --- | --- |
+| `VITE_FIREBASE_DATABASE_URL` | Navegador | URL do Realtime Database, por exemplo `https://proterra-sensors-default-rtdb.firebaseio.com/` |
+| `FIREBASE_DATABASE_URL` | Servidor | A mesma URL do Realtime Database |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Servidor | JSON da conta de serviço do Firebase, em uma única linha |
+| `SENSOR_API_KEY` | Servidor e ESP32 | Segredo compartilhado usado no header `x-api-key` |
 
-Depois de salvar as variáveis, faça um novo deploy. Nunca coloque `SUPABASE_SERVICE_ROLE_KEY` ou `SENSOR_API_KEY` em variáveis com prefixo `VITE_`, no código do ESP32 em repositório público, nem em mensagens ou capturas de tela.
+Não coloque `FIREBASE_SERVICE_ACCOUNT_JSON` nem `SENSOR_API_KEY` em variáveis `VITE_*`, no código do ESP32 em um repositório público ou em mensagens. Em ambientes Google que fornecem Application Default Credentials, o Admin SDK pode usar a credencial do ambiente sem `FIREBASE_SERVICE_ACCOUNT_JSON`.
 
-## No computador
+## Regras do Realtime Database
 
-Copie `.env.example` para `.env.local` e preencha com as chaves do projeto. Use valores inventados apenas para entender o formato; eles não conectam ao banco.
+O app precisa permitir leitura pública dos registros de sensores, mas não gravação pública. As regras versionadas em `firebase/database.rules.json` aplicam essa configuração e indexam `sensor_id`. Publique-as com o Firebase CLI:
 
-## O que cada mensagem significa
+```sh
+firebase deploy --only database
+```
 
-- **Banco conectado**: o site conseguiu ler a tabela.
-- **Banco sem dados**: conseguiu falar com o Supabase, mas ainda não encontrou uma leitura do `SENSOR-001`.
-- **Erro no banco**: endereço, chave pública, política de leitura, rede ou tabela precisam ser conferidos.
-- **Recepção de sensores não configurada**: falta `SENSOR_API_KEY` no servidor.
-- **Banco não configurado para receber leituras**: falta `SUPABASE_SERVICE_ROLE_KEY` ou a configuração de gravação está incorreta.
+As gravações do servidor usam o Admin SDK e não dependem de liberar escrita nas regras do banco. Configure credenciais administrativas apenas no ambiente do servidor.
 
-As chaves privadas não podem ser criadas com segurança pelo código. Elas precisam ser cadastradas no painel do Supabase/Vercel e também no equipamento responsável por enviar as leituras.
+## Formato dos dados
+
+Cada leitura fica como um filho de `/sensor_readings`, criado com uma chave `push` do Firebase:
+
+```json
+{
+  "sensor_id": "SENSOR-001",
+  "temperatura": 24.5,
+  "umidade_ar": 80,
+  "umidade_solo": 55,
+  "inclinacao": 1.2,
+  "vibracao": 0.1,
+  "chuva": 0,
+  "created_at": "2026-11-04T12:00:00.000Z"
+}
+```
+
+Leituras enviadas pelo app incluem `created_at` em ISO 8601. Para fontes externas, use o mesmo formato e chaves push, garantindo ordenação eficiente e compatibilidade com o painel.
+
+## Diagnóstico
+
+- **Banco conectado**: o navegador conseguiu consultar o caminho `/sensor_readings`.
+- **Banco sem dados**: a conexão funcionou, mas ainda não há leituras para `SENSOR-001`.
+- **Erro no banco**: confira URL, regras públicas de leitura e índice `sensor_id`.
+- **Recepção de sensores não configurada**: configure `SENSOR_API_KEY` no servidor.
+- **Banco não configurado para receber leituras**: confira `FIREBASE_DATABASE_URL` e as credenciais do Admin SDK.

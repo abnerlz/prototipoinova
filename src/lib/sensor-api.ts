@@ -7,7 +7,17 @@
  */
 
 export const DEFAULT_SENSOR_ID = "SENSOR-001";
-type SensorReadingRow = import("@/integrations/supabase/types").Database["public"]["Tables"]["sensor_readings"]["Row"];
+export interface SensorReadingRow {
+  id: string;
+  sensor_id: string;
+  temperatura: number | null;
+  umidade_ar: number | null;
+  umidade_solo: number | null;
+  inclinacao: number | null;
+  vibracao: number | null;
+  chuva: number | null;
+  created_at: string;
+}
 
 export interface SensorPayload {
   sensor_id: string;
@@ -17,6 +27,48 @@ export interface SensorPayload {
   inclinacao: number;
   vibracao: number;
   chuva: number;
+}
+
+function parseSensorReading(id: string, value: unknown): SensorReadingRow | null {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  if (typeof row["sensor_id"] !== "string") return null;
+  const createdAt = row["created_at"];
+  if (typeof createdAt !== "string" && typeof createdAt !== "number") return null;
+
+  const fields = ["temperatura", "umidade_ar", "umidade_solo", "inclinacao", "vibracao", "chuva"] as const;
+  if (fields.some((field) => row[field] !== null && typeof row[field] !== "number")) return null;
+  const timestamp = new Date(createdAt);
+  if (!Number.isFinite(timestamp.getTime())) return null;
+
+  return {
+    id,
+    sensor_id: row["sensor_id"],
+    temperatura: row["temperatura"] as number | null,
+    umidade_ar: row["umidade_ar"] as number | null,
+    umidade_solo: row["umidade_solo"] as number | null,
+    inclinacao: row["inclinacao"] as number | null,
+    vibracao: row["vibracao"] as number | null,
+    chuva: row["chuva"] as number | null,
+    created_at: timestamp.toISOString(),
+  };
+}
+
+async function loadSensorReadings(sensorId: string, limit: number): Promise<SensorReadingRow[]> {
+  const { getSensorReadingsReference } = await import("@/integrations/firebase/admin.server");
+  const snapshot = await getSensorReadingsReference()
+    .orderByChild("sensor_id")
+    .equalTo(sensorId)
+    .limitToLast(limit)
+    .get();
+
+  const rows: SensorReadingRow[] = [];
+  snapshot.forEach((child) => {
+    const row = parseSensorReading(child.key ?? "", child.val());
+    if (row) rows.push(row);
+    return false;
+  });
+  return rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
 
 export type LocalStatus = "NORMAL" | "ATENCAO" | "RISCO";
@@ -186,25 +238,17 @@ export async function handleSensorPost(request: Request): Promise<Response> {
   }
 
   let data: { id: string; created_at: string; sensor_id: string } | null = null;
-  let error: unknown = null;
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const insertResult = await supabaseAdmin
-      .from("sensor_readings")
-      .insert(result.data)
-      .select("id, created_at, sensor_id")
-      .single();
-    data = insertResult.data;
-    error = insertResult.error;
+    const { getSensorReadingsReference } = await import("@/integrations/firebase/admin.server");
+    const reading = { ...result.data, created_at: new Date().toISOString() };
+    const reference = getSensorReadingsReference().push();
+    await reference.set(reading);
+    data = { id: reference.key ?? "", created_at: reading.created_at, sensor_id: reading.sensor_id };
   } catch (cause) {
-    console.error("[sensor-api] conexão de gravação Supabase não configurada.", cause);
+    console.error("[sensor-api] conexão de gravação Firebase não configurada.", cause);
     return json({ success: false, message: "Banco não configurado para receber leituras." }, 503);
   }
 
-  if (error) {
-    console.error("[sensor-api] falha ao gravar leitura", error);
-    return json({ success: false, message: "Não foi possível gravar a leitura." }, 500);
-  }
   if (!data) return json({ success: false, message: "O banco não confirmou a gravação." }, 500);
 
   return json(
@@ -220,28 +264,14 @@ export async function handleSensorPost(request: Request): Promise<Response> {
 
 /** GET /api/sensores/:id/latest */
 export async function handleLatest(sensorId: string): Promise<Response> {
-  let data: Pick<SensorReadingRow, "sensor_id" | "temperatura" | "umidade_ar" | "umidade_solo" | "inclinacao" | "vibracao" | "chuva" | "created_at"> | null = null;
-  let error: { message: string } | null = null;
+  let data: SensorReadingRow | null = null;
   try {
-    const { supabaseRead } = await import("@/integrations/supabase/client.server");
-    const result = await supabaseRead
-      .from("sensor_readings")
-      .select("sensor_id, temperatura, umidade_ar, umidade_solo, inclinacao, vibracao, chuva, created_at")
-      .eq("sensor_id", sensorId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    data = result.data;
-    error = result.error;
+    data = (await loadSensorReadings(sensorId, 1000))[0] ?? null;
   } catch (cause) {
-    console.error("[sensor-api] consulta Supabase não configurada.", cause);
+    console.error("[sensor-api] consulta Firebase não configurada.", cause);
     return json({ success: false, message: "Banco não configurado para consulta." }, 503);
   }
 
-  if (error) {
-    console.error("[sensor-api] falha ao consultar última leitura", error);
-    return json({ success: false, message: "Erro ao consultar a última leitura." }, 500);
-  }
   if (!data) return json({ success: false, message: "Aguardando dados do sensor..." }, 404);
 
   const { status } = computeStatus(data);
@@ -264,25 +294,11 @@ export async function handleHistory(sensorId: string, url: URL): Promise<Respons
   const limit = Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 1), 1000) : 100;
 
   let data: SensorReadingRow[] = [];
-  let error: { message: string } | null = null;
   try {
-    const { supabaseRead } = await import("@/integrations/supabase/client.server");
-    const result = await supabaseRead
-      .from("sensor_readings")
-      .select("id, sensor_id, temperatura, umidade_ar, umidade_solo, inclinacao, vibracao, chuva, created_at")
-      .eq("sensor_id", sensorId)
-      .order("created_at", { ascending: false })
-      .limit(limit);
-    data = result.data ?? [];
-    error = result.error;
+    data = await loadSensorReadings(sensorId, limit);
   } catch (cause) {
-    console.error("[sensor-api] consulta Supabase não configurada.", cause);
+    console.error("[sensor-api] consulta Firebase não configurada.", cause);
     return json({ success: false, message: "Banco não configurado para consulta." }, 503);
-  }
-
-  if (error) {
-    console.error("[sensor-api] falha ao consultar histórico", error);
-    return json({ success: false, message: "Erro ao consultar o histórico." }, 500);
   }
 
   return json({

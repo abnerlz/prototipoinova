@@ -1,0 +1,11 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "sensor_readings": {
+      ".read": true,
+      ".write": false,
+      ".indexOn": ["sensor_id"]
+    }
+  }
+}
