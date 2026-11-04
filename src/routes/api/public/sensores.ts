@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { handleSensorPost, json, preflight } from "@/lib/sensor-api";
+import { json, preflight } from "@/lib/sensor-api";
+import { handleSensorPost } from "@/lib/sensor-api.server";
 
 /** Espelho público de /api/sensores (não exige autenticação do site publicado). */
 export const Route = createFileRoute("/api/public/sensores")({

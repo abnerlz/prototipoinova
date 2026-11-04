@@ -32,8 +32,6 @@ Cada leitura fica como um filho de `/sensor_readings`, criado com uma chave `pus
 ```json
 {
   "sensor_id": "SENSOR-001",
-  "temperatura": 24.5,
-  "umidade_ar": 80,
   "umidade_solo": 55,
   "inclinacao": 1.2,
   "vibracao": 0.1,

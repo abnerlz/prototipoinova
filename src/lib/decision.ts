@@ -79,7 +79,6 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   const { sensors, risk, alerts, scopeLabel, households } = input;
   const rain = rainfall24h(sensors);
   const humidity = avg(sensors, "umidade");
-  const airHumidity = avg(sensors, "umidade_ar");
   const tilt = avg(sensors, "inclinacao");
   const vibration = avg(sensors, "vibracao");
   const offline = sensors.filter((s) => s.status !== "online").length;
@@ -94,7 +93,6 @@ export function buildDecisionSupport(input: DecisionInput): DecisionOutput {
   const facts = [
     fact(rain !== null, `chuva acumulada medida nas últimas 24 horas: ${rain ?? "indisponível"} mm`),
     humidity !== undefined ? `umidade do solo em ${humidity.toFixed(0)}%` : "",
-    airHumidity !== undefined ? `umidade do ar em ${airHumidity.toFixed(0)}%` : "",
   ].filter(Boolean);
   const context = facts.join(", ");
 

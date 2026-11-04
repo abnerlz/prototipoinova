@@ -144,7 +144,6 @@ export function explainClassification(risk: RiskAssessment, sensors: Sensor[]): 
   push(rain, "pluviosidade", 14, "chuva acumulada acima do normal");
   push(moisture, "umidade", 74, "umidade do solo elevada");
   push(tilt, "inclinacao", 4, "inclinação do terreno crescente");
-  push(byType("umidade_ar"), "umidade_ar", 90, "umidade do ar saturada");
   push(vib, "vibracao", 5, "vibração acima do padrão");
 
   if (!parts.length) {

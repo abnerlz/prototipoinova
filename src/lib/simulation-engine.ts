@@ -122,10 +122,8 @@ export function phaseIntensities(scenario: SimulationScenario, progress: number)
 const FIELD: Record<SensorType, keyof EnvState> = {
   pluviosidade: "rain",
   umidade: "moisture",
-  temperatura: "temperature",
   vibracao: "vibration",
   inclinacao: "tilt",
-  umidade_ar: "airHumidity",
 };
 
 /**
@@ -169,10 +167,6 @@ export function applyScenario(
     );
   });
 
-  // A temperatura acompanha a chuva (cai quando chove forte).
-  if (next.rain > state.rain + 1) {
-    next.temperature = Math.max(22, next.temperature - 0.15);
-  }
   return next;
 }
 

@@ -13,8 +13,6 @@ export interface EnvState {
   neighborhoodId: string;
   rain: number; // mm/h
   moisture: number; // % (umidade do solo)
-  airHumidity: number; // % (umidade do ar)
-  temperature: number; // °C
   vibration: number; // mm/s
   tilt: number; // graus
   stormPhase: number; // 0..1 intensidade do evento de chuva
@@ -40,9 +38,7 @@ const hash = (value: string) => {
 
 /** Faixas de operação normal (usadas também pelo modelo de risco). */
 export const RANGES = {
-  temperature: [22, 33] as const,
   moisture: [30, 100] as const,
-  airHumidity: [40, 100] as const,
   rain: [0, 90] as const,
   vibration: [0, 20] as const,
   tilt: [0, 25] as const,
@@ -58,8 +54,6 @@ export function createEnvState(neighborhoodId: string, susceptibility: number, s
     neighborhoodId,
     rain,
     moisture,
-    airHumidity: clamp(58 + rain * 0.9 + (rnd() - 0.5) * 12, 40, 100),
-    temperature: clamp(30 - rain * 0.12 + (rnd() - 0.5) * 4, 22, 33),
     vibration: clamp(0.4 + saturation * 2.4 + rnd() * 0.7, 0, 20),
     tilt: clamp(0.9 + susceptibility * 1.1 + saturation * saturation * 4 + (rnd() - 0.5) * 0.4, 0, 25),
     stormPhase,
@@ -88,13 +82,6 @@ export function stepEnv(state: EnvState, susceptibility: number, dt = 0.25): Env
   const rate = moistureEq > state.moisture ? 0.9 : 0.28 * (1 - susceptibility * 0.4);
   const moisture = clamp(approach(state.moisture, moistureEq, rate) + jitter(0.5), 30, 100);
 
-  // --- Umidade do ar: acompanha a chuva, com resposta rápida ---------------
-  const airEq = clamp(58 + rain * 1.1, 40, 99);
-  const airHumidity = clamp(approach(state.airHumidity, airEq, 1.1) + jitter(0.8), 40, 100);
-
-  // --- Temperatura: cai na chuva, sobe no tempo seco ------------------------
-  const temperature = clamp(approach(state.temperature, rain > 4 ? 23.5 : 30, 0.6) + jitter(0.3), 22, 33);
-
   // --- Resposta geotécnica --------------------------------------------------
   const saturation = clamp((moisture - 62) / 38, 0, 1);
 
@@ -104,7 +91,7 @@ export function stepEnv(state: EnvState, susceptibility: number, dt = 0.25): Env
   const vibrationEq = clamp(0.4 + saturation * 4 + tilt * 0.15, 0, 20);
   const vibration = clamp(approach(state.vibration, vibrationEq, 0.7) + jitter(0.35), 0, 20);
 
-  return { ...state, rain, moisture, airHumidity, temperature, tilt, vibration, stormPhase };
+  return { ...state, rain, moisture, tilt, vibration, stormPhase };
 }
 
 export function envValue(state: EnvState, type: SensorType): number {
@@ -113,10 +100,6 @@ export function envValue(state: EnvState, type: SensorType): number {
       return state.rain;
     case "umidade":
       return state.moisture;
-    case "umidade_ar":
-      return state.airHumidity;
-    case "temperatura":
-      return state.temperature;
     case "vibracao":
       return state.vibration;
     case "inclinacao":

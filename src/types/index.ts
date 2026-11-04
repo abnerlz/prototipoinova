@@ -5,8 +5,6 @@
 export type SensorType =
   | "pluviosidade"
   | "umidade"
-  | "umidade_ar"
-  | "temperatura"
   | "inclinacao"
   | "vibracao";
 

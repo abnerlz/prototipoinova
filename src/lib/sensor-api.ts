@@ -1,17 +1,15 @@
 /**
  * Núcleo da API REST de leituras do protótipo físico (ESP32/Arduino).
  *
- * Este módulo é client-safe: contém apenas validação, cálculo de status e os
- * handlers HTTP. O cliente privilegiado do banco é carregado dinamicamente
- * dentro de cada handler (nunca no escopo do módulo).
+ * Este módulo é client-safe: contém apenas tipos, validação, cálculo de status
+ * e respostas HTTP compartilhadas. Os handlers de banco ficam em
+ * `sensor-api.server.ts`.
  */
 
 export const DEFAULT_SENSOR_ID = "SENSOR-001";
 export interface SensorReadingRow {
   id: string;
   sensor_id: string;
-  temperatura: number | null;
-  umidade_ar: number | null;
   umidade_solo: number | null;
   inclinacao: number | null;
   vibracao: number | null;
@@ -21,61 +19,16 @@ export interface SensorReadingRow {
 
 export interface SensorPayload {
   sensor_id: string;
-  temperatura: number;
-  umidade_ar: number;
   umidade_solo: number;
   inclinacao: number;
   vibracao: number;
   chuva: number;
 }
 
-function parseSensorReading(id: string, value: unknown): SensorReadingRow | null {
-  if (!value || typeof value !== "object") return null;
-  const row = value as Record<string, unknown>;
-  if (typeof row["sensor_id"] !== "string") return null;
-  const createdAt = row["created_at"];
-  if (typeof createdAt !== "string" && typeof createdAt !== "number") return null;
-
-  const fields = ["temperatura", "umidade_ar", "umidade_solo", "inclinacao", "vibracao", "chuva"] as const;
-  if (fields.some((field) => row[field] !== null && typeof row[field] !== "number")) return null;
-  const timestamp = new Date(createdAt);
-  if (!Number.isFinite(timestamp.getTime())) return null;
-
-  return {
-    id,
-    sensor_id: row["sensor_id"],
-    temperatura: row["temperatura"] as number | null,
-    umidade_ar: row["umidade_ar"] as number | null,
-    umidade_solo: row["umidade_solo"] as number | null,
-    inclinacao: row["inclinacao"] as number | null,
-    vibracao: row["vibracao"] as number | null,
-    chuva: row["chuva"] as number | null,
-    created_at: timestamp.toISOString(),
-  };
-}
-
-async function loadSensorReadings(sensorId: string, limit: number): Promise<SensorReadingRow[]> {
-  const { getSensorReadingsReference } = await import("@/integrations/firebase/admin.server");
-  const snapshot = await getSensorReadingsReference()
-    .orderByChild("sensor_id")
-    .equalTo(sensorId)
-    .limitToLast(limit)
-    .get();
-
-  const rows: SensorReadingRow[] = [];
-  snapshot.forEach((child) => {
-    const row = parseSensorReading(child.key ?? "", child.val());
-    if (row) rows.push(row);
-    return false;
-  });
-  return rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
-}
-
 export type LocalStatus = "NORMAL" | "ATENCAO" | "RISCO";
 
 /** Faixas de referência informadas pelo protótipo. */
 export const THRESHOLDS = {
-  temperatura: { warn: 35, critical: 40 },
   umidade_solo: { warn: 70, critical: 85 },
   inclinacao: { warn: 5, critical: 10 },
   vibracao: { warn: 0.5, critical: 1 },
@@ -93,8 +46,6 @@ export function levelOf(key: ThresholdKey, value: number | null | undefined): 0 
 }
 
 export interface ReadingLike {
-  temperatura: number | null;
-  umidade_ar: number | null;
   umidade_solo: number | null;
   inclinacao: number | null;
   vibracao: number | null;
@@ -104,10 +55,7 @@ export interface ReadingLike {
 /**
  * Status geral combinando os indicadores.
  *
- * RISCO exige contexto: um crítico isolado de temperatura não caracteriza
- * deslizamento. Só vira RISCO quando um indicador geotécnico/hídrico crítico
- * aparece acompanhado de outro indicador alterado, ou quando há vários
- * indicadores em atenção simultaneamente.
+ * RISCO exige uma combinação de indicadores geotécnicos e hídricos alterados.
  */
 export function computeStatus(r: ReadingLike): { status: LocalStatus; reasons: string[] } {
   const entries: { key: ThresholdKey; label: string; value: number | null; level: 0 | 1 | 2 }[] = [
@@ -115,22 +63,19 @@ export function computeStatus(r: ReadingLike): { status: LocalStatus; reasons: s
     { key: "umidade_solo", label: "umidade do solo", value: r.umidade_solo, level: levelOf("umidade_solo", r.umidade_solo) },
     { key: "inclinacao", label: "inclinação", value: r.inclinacao, level: levelOf("inclinacao", r.inclinacao) },
     { key: "vibracao", label: "vibração", value: r.vibracao, level: levelOf("vibracao", r.vibracao) },
-    { key: "temperatura", label: "temperatura", value: r.temperatura, level: levelOf("temperatura", r.temperatura) },
   ];
 
   const reasons = entries
     .filter((e) => e.level > 0)
     .map((e) => `${e.label} em ${e.level === 2 ? "nível crítico" : "atenção"} (${e.value})`);
 
-  const geo = entries.filter((e) => e.key !== "temperatura");
-  const criticalGeo = geo.filter((e) => e.level === 2).length;
-  const alteredGeo = geo.filter((e) => e.level >= 1).length;
-  const anyAltered = entries.filter((e) => e.level >= 1).length;
+  const criticalGeo = entries.filter((e) => e.level === 2).length;
+  const alteredGeo = entries.filter((e) => e.level >= 1).length;
 
   if ((criticalGeo >= 1 && alteredGeo >= 2) || criticalGeo >= 2 || alteredGeo >= 3) {
     return { status: "RISCO", reasons };
   }
-  if (anyAltered >= 1) return { status: "ATENCAO", reasons };
+  if (alteredGeo >= 1) return { status: "ATENCAO", reasons };
   return { status: "NORMAL", reasons };
 }
 
@@ -153,8 +98,6 @@ export function preflight(): Response {
 }
 
 const NUMERIC_FIELDS = [
-  "temperatura",
-  "umidade_ar",
   "umidade_solo",
   "inclinacao",
   "vibracao",
@@ -192,129 +135,10 @@ export function validatePayload(raw: unknown): { ok: true; data: SensorPayload }
     ok: true,
     data: {
       sensor_id: sensorId.trim(),
-      temperatura: parsed["temperatura"]!,
-      umidade_ar: parsed["umidade_ar"]!,
       umidade_solo: parsed["umidade_solo"]!,
       inclinacao: parsed["inclinacao"]!,
       vibracao: parsed["vibracao"]!,
       chuva: parsed["chuva"]!,
     },
   };
-}
-
-/** POST /api/sensores — recebe uma leitura do ESP32. */
-export async function handleSensorPost(request: Request): Promise<Response> {
-  const requiredKey = process.env["SENSOR_API_KEY"];
-  if (!requiredKey) {
-    console.error("[sensor-api] SENSOR_API_KEY não configurada no servidor.");
-    return json({ success: false, message: "Recepção de sensores não configurada no servidor." }, 503);
-  }
-  const provided = request.headers.get("x-api-key");
-  if (provided !== requiredKey) {
-    return json({ success: false, message: "Chave de API inválida ou ausente (header x-api-key)." }, 401);
-  }
-
-  const contentLength = Number(request.headers.get("content-length") ?? 0);
-  if (contentLength > 8192) {
-    return json({ success: false, message: "Corpo da requisição excede o limite de 8 KB." }, 413);
-  }
-
-  let raw: unknown;
-  try {
-    const body = await request.text();
-    if (body.length > 8192) {
-      return json({ success: false, message: "Corpo da requisição excede o limite de 8 KB." }, 413);
-    }
-    raw = JSON.parse(body);
-  } catch {
-    return json({ success: false, message: "JSON inválido." }, 400);
-  }
-
-  const result = validatePayload(raw);
-  if (!result.ok) return json({ success: false, message: result.error }, 400);
-
-  if (result.data.sensor_id !== DEFAULT_SENSOR_ID) {
-    return json({ success: false, message: `Este protótipo está configurado para o sensor ${DEFAULT_SENSOR_ID}.` }, 422);
-  }
-
-  let data: { id: string; created_at: string; sensor_id: string } | null = null;
-  try {
-    const { getSensorReadingsReference } = await import("@/integrations/firebase/admin.server");
-    const reading = { ...result.data, created_at: new Date().toISOString() };
-    const reference = getSensorReadingsReference().push();
-    await reference.set(reading);
-    data = { id: reference.key ?? "", created_at: reading.created_at, sensor_id: reading.sensor_id };
-  } catch (cause) {
-    console.error("[sensor-api] conexão de gravação Firebase não configurada.", cause);
-    return json({ success: false, message: "Banco não configurado para receber leituras." }, 503);
-  }
-
-  if (!data) return json({ success: false, message: "O banco não confirmou a gravação." }, 500);
-
-  return json(
-    {
-      success: true,
-      message: "Dados recebidos com sucesso",
-      sensor_id: data.sensor_id,
-      timestamp: data.created_at,
-    },
-    201,
-  );
-}
-
-/** GET /api/sensores/:id/latest */
-export async function handleLatest(sensorId: string): Promise<Response> {
-  let data: SensorReadingRow | null = null;
-  try {
-    data = (await loadSensorReadings(sensorId, 1000))[0] ?? null;
-  } catch (cause) {
-    console.error("[sensor-api] consulta Firebase não configurada.", cause);
-    return json({ success: false, message: "Banco não configurado para consulta." }, 503);
-  }
-
-  if (!data) return json({ success: false, message: "Aguardando dados do sensor..." }, 404);
-
-  const { status } = computeStatus(data);
-  return json({
-    sensor_id: data.sensor_id,
-    temperatura: data.temperatura,
-    umidade_ar: data.umidade_ar,
-    umidade_solo: data.umidade_solo,
-    inclinacao: data.inclinacao,
-    vibracao: data.vibracao,
-    chuva: data.chuva,
-    status,
-    timestamp: data.created_at,
-  });
-}
-
-/** GET /api/sensores/:id/history?limit=100 */
-export async function handleHistory(sensorId: string, url: URL): Promise<Response> {
-  const raw = Number(url.searchParams.get("limit") ?? 100);
-  const limit = Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 1), 1000) : 100;
-
-  let data: SensorReadingRow[] = [];
-  try {
-    data = await loadSensorReadings(sensorId, limit);
-  } catch (cause) {
-    console.error("[sensor-api] consulta Firebase não configurada.", cause);
-    return json({ success: false, message: "Banco não configurado para consulta." }, 503);
-  }
-
-  return json({
-    sensor_id: sensorId,
-    count: data.length,
-    limit,
-    readings: data.map((r) => ({
-      id: r.id,
-      temperatura: r.temperatura,
-      umidade_ar: r.umidade_ar,
-      umidade_solo: r.umidade_solo,
-      inclinacao: r.inclinacao,
-      vibracao: r.vibracao,
-      chuva: r.chuva,
-      status: computeStatus(r).status,
-      timestamp: r.created_at,
-    })),
-  });
 }
