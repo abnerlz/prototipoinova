@@ -29,7 +29,7 @@ function AdministrationPage() {
     setBusy(true);
     setCreatedAccount(null);
     try {
-      const user = firebaseAuth.currentUser;
+      const user = firebaseAuth?.currentUser;
       if (!user) throw new Error("Entre novamente com sua conta de administrador.");
       const token = await user.getIdToken(true);
       const response = await fetch("/api/admin/users", {

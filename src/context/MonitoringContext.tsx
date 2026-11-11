@@ -191,51 +191,58 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
     return () => window.clearInterval(id);
   }, []);
 
-  useEffect(() => onAuthStateChanged(firebaseAuth, async (user) => {
-    setAuthUser(user);
-    if (!user) {
-      setIsOperator(false);
-      setIsAdmin(false);
+  useEffect(() => {
+    if (!firebaseAuth) {
       setAuthLoading(false);
       return;
     }
+    return onAuthStateChanged(firebaseAuth, async (user) => {
+      setAuthUser(user);
+      if (!user) {
+        setIsOperator(false);
+        setIsAdmin(false);
+        setAuthLoading(false);
+        return;
+      }
 
-    setAuthLoading(true);
-    try {
-      const claims = (await getIdTokenResult(user)).claims;
-      const verified = user.emailVerified && claims["email_verified"] === true;
-      const admin = verified && claims["admin"] === true;
-      setIsAdmin(admin);
-      setIsOperator(verified && (admin || claims["operator"] === true));
-    } catch (cause) {
-      console.error("[auth] Não foi possível carregar o perfil do operador.", cause);
-      setIsOperator(false);
-      setIsAdmin(false);
-    } finally {
-      setAuthLoading(false);
-    }
-  }), []);
+      setAuthLoading(true);
+      try {
+        const claims = (await getIdTokenResult(user)).claims;
+        const verified = user.emailVerified && claims["email_verified"] === true;
+        const admin = verified && claims["admin"] === true;
+        setIsAdmin(admin);
+        setIsOperator(verified && (admin || claims["operator"] === true));
+      } catch (cause) {
+        console.error("[auth] Não foi possível carregar o perfil do operador.", cause);
+        setIsOperator(false);
+        setIsAdmin(false);
+      } finally {
+        setAuthLoading(false);
+      }
+    });
+  }, []);
 
   const signInOperator = useCallback(async (email: string, password: string) => {
-    if (!firebaseAuthConfigured) {
+    const auth = firebaseAuth;
+    if (!firebaseAuthConfigured || !auth) {
       throw new Error("Configure VITE_FIREBASE_API_KEY para ativar o login do Firebase.");
     }
-    const credential = await signInWithEmailAndPassword(firebaseAuth, email.trim(), password);
+    const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
     if (!credential.user.emailVerified) {
       await sendEmailVerification(credential.user, { url: window.location.origin });
-      await firebaseSignOut(firebaseAuth);
+      await firebaseSignOut(auth);
       throw new Error("Enviamos um link de confirmação para seu e-mail. Confirme a conta e depois entre novamente.");
     }
 
     const claims = (await getIdTokenResult(credential.user, true)).claims;
     const admin = claims["admin"] === true;
     if (!admin && claims["operator"] !== true) {
-      await firebaseSignOut(firebaseAuth);
+      await firebaseSignOut(auth);
       throw new Error("Esta conta não tem perfil de operador no ProTerra.");
     }
   }, []);
 
-  const signOutOperator = useCallback(() => firebaseSignOut(firebaseAuth), []);
+  const signOutOperator = useCallback(() => firebaseAuth ? firebaseSignOut(firebaseAuth) : Promise.resolve(), []);
 
   const simRef = useRef<SimRuntime | null>(null);
   const [simulation, setSimulation] = useState<SimulationState | null>(null);
