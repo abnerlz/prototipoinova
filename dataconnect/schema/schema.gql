@@ -1,0 +1,45 @@
+type Organization @table {
+  name: String!
+  type: String!
+  location: String!
+  contactEmail: String
+  websiteUrl: String
+}
+
+type Product @table {
+  name: String!
+  sku: String!
+  brandOwner: Organization!
+  description: String
+  category: String
+}
+
+type Material @table {
+  name: String!
+  sustainabilityScore: Int!
+  supplier: Organization!
+  certificationDetails: String
+}
+
+type Batch @table {
+  product: Product!
+  manufacturingDate: Date!
+  carbonFootprintMetric: Float!
+  status: String
+}
+
+type Movement @table {
+  batch: Batch!
+  origin: Organization!
+  destination: Organization!
+  timestamp: Timestamp!
+  transportMode: String
+}
+
+type Certification @table {
+  name: String!
+  issuer: String!
+  expiryDate: Date!
+  organization: Organization
+  material: Material
+}
