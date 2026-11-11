@@ -21,5 +21,7 @@ const app =
   );
 
 export const realtimeDatabase = getDatabase(app);
-export const firebaseAuth = getAuth(app);
 export const firebaseAuthConfigured = Boolean(apiKey);
+// Vercel must build with the web API key for authentication. Keep public pages
+// renderable when it is missing instead of throwing auth/invalid-api-key in SSR.
+export const firebaseAuth = apiKey ? getAuth(app) : null;

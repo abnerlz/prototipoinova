@@ -80,7 +80,7 @@ function OperationPage() {
   }, [isOperator]);
 
   async function saveReadingReview(reading: RealReading, status: ReadingReview["status"]) {
-    const reviewerId = firebaseAuth.currentUser?.uid;
+    const reviewerId = firebaseAuth?.currentUser?.uid;
     if (!reviewerId) return;
     const note = readingNotes[reading.id]?.trim() ?? "";
     try {
@@ -98,7 +98,7 @@ function OperationPage() {
   }
 
   async function saveSensorReview(status: SensorReview["status"]) {
-    const reviewerId = firebaseAuth.currentUser?.uid;
+    const reviewerId = firebaseAuth?.currentUser?.uid;
     if (!reviewerId) return;
     try {
       await set(ref(realtimeDatabase, `sensor_reviews/${DEFAULT_SENSOR_ID}`), {
@@ -116,7 +116,7 @@ function OperationPage() {
 
   async function addRegion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const creatorId = firebaseAuth.currentUser?.uid;
+    const creatorId = firebaseAuth?.currentUser?.uid;
     if (!creatorId) return;
     const name = regionName.trim().replace(/\s+/g, " ");
     const lat = Number(latitude);
