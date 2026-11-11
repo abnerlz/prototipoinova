@@ -1,10 +1,18 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
-import { limitToLast, onValue, orderByKey, query, ref } from "firebase/database";
+import {
+  getIdTokenResult,
+  onAuthStateChanged,
+  sendEmailVerification,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+} from "firebase/auth";
+import type { User } from "firebase/auth";
+import { limitToLast, onValue, orderByKey, push, query, ref, set, update } from "firebase/database";
 
-import { MUNICIPALITIES, NEIGHBORHOODS, getNeighborhood } from "@/data/regions";
-import { realtimeDatabase } from "@/integrations/firebase/client";
+import { MUNICIPALITIES, NEIGHBORHOODS, getNeighborhood, replaceCustomNeighborhoods } from "@/data/regions";
+import { firebaseAuth, firebaseAuthConfigured, realtimeDatabase } from "@/integrations/firebase/client";
 import { DEFAULT_SENSOR_ID, computeStatus, type LocalStatus } from "@/lib/sensor-api";
 import { parseFirebaseReading, sensorsFromReadings, type RealReading } from "@/lib/real-data";
 import { RISK_LABEL, assessRisk } from "@/lib/ai";
@@ -28,6 +36,7 @@ import type {
   RiskAssessment,
   Sensor,
   SensorType,
+  Neighborhood,
   SimulationRecord,
   SimulationScenario,
   SimulationSpeed,
@@ -57,6 +66,7 @@ interface MonitoringContextValue {
   databaseConnection: DatabaseConnection;
   databaseError: string | null;
   alerts: Alert[];
+  customRegions: Neighborhood[];
   filters: Filters;
   live: boolean;
   intervalMs: number;
@@ -64,8 +74,15 @@ interface MonitoringContextValue {
   setFilters: (patch: Partial<Filters>) => void;
   setLive: (live: boolean) => void;
   setIntervalMs: (ms: number) => void;
-  createAlert: (alert: Omit<Alert, "id" | "createdAt" | "status">) => void;
-  closeAlert: (id: string) => void;
+  createAlert: (alert: Omit<Alert, "id" | "createdAt" | "status" | "simulated">) => Promise<Alert | null>;
+  closeAlert: (id: string) => Promise<boolean>;
+  operatorEmail: string | null;
+  isOperator: boolean;
+  isAdmin: boolean;
+  authLoading: boolean;
+  authConfigured: boolean;
+  signInOperator: (email: string, password: string) => Promise<void>;
+  signOutOperator: () => Promise<void>;
   sensorsIn: (municipalityId?: string, neighborhoodId?: string, type?: SensorType | "all") => Sensor[];
   riskFor: (municipalityId?: string, neighborhoodId?: string) => RiskAssessment;
   autoAlert: Alert | null;
@@ -93,6 +110,36 @@ const MAX_HISTORY = 169;
 
 const ORDER: RiskAssessment["level"][] = ["baixo", "moderado", "alto", "critico"];
 
+const VALID_RISK_LEVELS = new Set<RiskAssessment["level"]>(ORDER);
+
+function parseStoredAlert(id: string, value: unknown): Alert | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const row = value as Record<string, unknown>;
+  if (
+    typeof row["municipalityId"] !== "string" ||
+    typeof row["neighborhoodId"] !== "string" ||
+    typeof row["level"] !== "string" || !VALID_RISK_LEVELS.has(row["level"] as RiskAssessment["level"]) ||
+    typeof row["description"] !== "string" ||
+    !Array.isArray(row["sensorIds"]) || !row["sensorIds"].every((sensorId) => typeof sensorId === "string") ||
+    typeof row["createdAt"] !== "number" || !Number.isFinite(row["createdAt"]) ||
+    (row["status"] !== "ativo" && row["status"] !== "encerrado") ||
+    (row["origin"] !== "ia" && row["origin"] !== "manual")
+  ) return null;
+
+  return {
+    id,
+    municipalityId: row["municipalityId"],
+    neighborhoodId: row["neighborhoodId"],
+    level: row["level"] as Alert["level"],
+    description: row["description"],
+    sensorIds: row["sensorIds"] as string[],
+    createdAt: row["createdAt"],
+    ...(typeof row["closedAt"] === "number" ? { closedAt: row["closedAt"] } : {}),
+    status: row["status"],
+    origin: row["origin"],
+  };
+}
+
 interface SimRuntime {
   active: boolean;
   recovering: boolean;
@@ -118,12 +165,17 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
   const [freshnessClock, setFreshnessClock] = useState(Date.now());
   const [databaseConnection, setDatabaseConnection] = useState<DatabaseConnection>("conectando");
   const [databaseError, setDatabaseError] = useState<string | null>(null);
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [isOperator, setIsOperator] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const realSensors = useMemo(() => sensorsFromReadings(realReadings), [realReadings, freshnessClock]);
   const sensors = mode === "real" ? realSensors : simSensors;
   const latestReal = realReadings[0] ?? null;
   const realStatus = latestReal ? computeStatus(latestReal).status : null;
   const lastRealUpdate = latestReal ? new Date(latestReal.created_at).getTime() : null;
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [customRegions, setCustomRegions] = useState<Neighborhood[]>([]);
   const [filters, setFiltersState] = useState<Filters>({
     municipalityId: "all",
     neighborhoodId: "all",
@@ -139,10 +191,114 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
     return () => window.clearInterval(id);
   }, []);
 
+  useEffect(() => onAuthStateChanged(firebaseAuth, async (user) => {
+    setAuthUser(user);
+    if (!user) {
+      setIsOperator(false);
+      setIsAdmin(false);
+      setAuthLoading(false);
+      return;
+    }
+
+    setAuthLoading(true);
+    try {
+      const claims = (await getIdTokenResult(user)).claims;
+      const verified = user.emailVerified && claims["email_verified"] === true;
+      const admin = verified && claims["admin"] === true;
+      setIsAdmin(admin);
+      setIsOperator(verified && (admin || claims["operator"] === true));
+    } catch (cause) {
+      console.error("[auth] Não foi possível carregar o perfil do operador.", cause);
+      setIsOperator(false);
+      setIsAdmin(false);
+    } finally {
+      setAuthLoading(false);
+    }
+  }), []);
+
+  const signInOperator = useCallback(async (email: string, password: string) => {
+    if (!firebaseAuthConfigured) {
+      throw new Error("Configure VITE_FIREBASE_API_KEY para ativar o login do Firebase.");
+    }
+    const credential = await signInWithEmailAndPassword(firebaseAuth, email.trim(), password);
+    if (!credential.user.emailVerified) {
+      await sendEmailVerification(credential.user, { url: window.location.origin });
+      await firebaseSignOut(firebaseAuth);
+      throw new Error("Enviamos um link de confirmação para seu e-mail. Confirme a conta e depois entre novamente.");
+    }
+
+    const claims = (await getIdTokenResult(credential.user, true)).claims;
+    const admin = claims["admin"] === true;
+    if (!admin && claims["operator"] !== true) {
+      await firebaseSignOut(firebaseAuth);
+      throw new Error("Esta conta não tem perfil de operador no ProTerra.");
+    }
+  }, []);
+
+  const signOutOperator = useCallback(() => firebaseSignOut(firebaseAuth), []);
+
   const simRef = useRef<SimRuntime | null>(null);
   const [simulation, setSimulation] = useState<SimulationState | null>(null);
   const [simulationHistory, setSimulationHistory] = useState<SimulationRecord[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = onValue(
+      ref(realtimeDatabase, "custom_regions"),
+      (snapshot) => {
+        const regions: Neighborhood[] = [];
+        snapshot.forEach((child) => {
+          const raw = child.val() as Record<string, unknown> | null;
+          const center = raw?.["center"] as Record<string, unknown> | undefined;
+          if (
+            !raw || typeof raw["name"] !== "string" || typeof raw["municipalityId"] !== "string" ||
+            typeof center?.["lat"] !== "number" || typeof center?.["lng"] !== "number" ||
+            typeof raw["susceptibility"] !== "number" || typeof raw["households"] !== "number"
+          ) return false;
+          regions.push({
+            id: child.key ?? "",
+            name: raw["name"],
+            municipalityId: raw["municipalityId"],
+            center: { lat: center["lat"], lng: center["lng"] },
+            susceptibility: raw["susceptibility"],
+            households: raw["households"],
+          });
+          return false;
+        });
+        replaceCustomNeighborhoods(regions);
+        setCustomRegions(regions);
+      },
+      (cause) => {
+        console.error("[regiões] Falha ao ler regiões cadastradas.", cause);
+        toast.error("Não foi possível carregar as novas regiões", { description: "Confira a permissão de leitura do Firebase." });
+      },
+    );
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onValue(
+      ref(realtimeDatabase, "alerts"),
+      (snapshot) => {
+        const stored: Alert[] = [];
+        snapshot.forEach((child) => {
+          const alert = parseStoredAlert(child.key ?? "", child.val());
+          if (alert) stored.push(alert);
+          return false;
+        });
+        stored.sort((a, b) => b.createdAt - a.createdAt);
+        setAlerts((current) => [...current.filter((alert) => alert.simulated), ...stored]);
+      },
+      (cause) => {
+        console.error("[alertas] Falha ao ler o histórico persistido.", cause);
+        toast.error("Não foi possível carregar o histórico", {
+          description: "Verifique as regras de leitura do Firebase para os alertas.",
+          id: "alerts-read-error",
+        });
+      },
+    );
+    return unsubscribe;
+  }, []);
 
   // Cada carregamento gera um conjunto de leituras diferente, dentro da faixa
   // realista — sem divergir da renderização do servidor (roda após a montagem).
@@ -201,18 +357,61 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const createAlert = useCallback<MonitoringContextValue["createAlert"]>((alert) => {
-    setAlerts((prev) => [
-      { ...alert, id: `alert-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, createdAt: Date.now(), status: "ativo" },
-      ...prev,
-    ]);
-  }, []);
+  const createAlert = useCallback<MonitoringContextValue["createAlert"]>(async (alert) => {
+    const createdAt = Date.now();
+    if (mode === "simulacao") {
+      const localAlert: Alert = {
+        ...alert,
+        id: `local-${createdAt}-${Math.random().toString(36).slice(2, 7)}`,
+        createdAt,
+        status: "ativo",
+        simulated: true,
+      };
+      setAlerts((current) => [localAlert, ...current]);
+      return localAlert;
+    }
+    if (!isOperator) {
+      toast.error("Ação restrita a operadores", { description: "Entre com uma conta de operador verificada para registrar alertas." });
+      return null;
+    }
 
-  const closeAlert = useCallback((id: string) => {
-    setAlerts((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: "encerrado", closedAt: Date.now() } : a)),
-    );
-  }, []);
+    const alertReference = push(ref(realtimeDatabase, "alerts"));
+    if (!alertReference.key) return null;
+    const storedAlert: Omit<Alert, "id" | "simulated"> = {
+      ...alert,
+      createdAt,
+      status: "ativo",
+    };
+    try {
+      await set(alertReference, storedAlert);
+      return { ...storedAlert, id: alertReference.key };
+    } catch (cause) {
+      console.error("[alertas] Falha ao gravar alerta no Firebase.", cause);
+      toast.error("Alerta não foi salvo", { description: "A conta pode não ter permissão de operador ou o Firebase está indisponível." });
+      return null;
+    }
+  }, [isOperator, mode]);
+
+  const closeAlert = useCallback<MonitoringContextValue["closeAlert"]>(async (id) => {
+    if (id.startsWith("local-")) {
+      setAlerts((current) => current.map((alert) =>
+        alert.id === id ? { ...alert, status: "encerrado", closedAt: Date.now() } : alert,
+      ));
+      return true;
+    }
+    if (!isOperator) {
+      toast.error("Ação restrita a operadores", { description: "Entre com uma conta de operador para encerrar este alerta." });
+      return false;
+    }
+    try {
+      await update(ref(realtimeDatabase, `alerts/${id}`), { status: "encerrado", closedAt: Date.now() });
+      return true;
+    } catch (cause) {
+      console.error("[alertas] Falha ao encerrar alerta no Firebase.", cause);
+      toast.error("Não foi possível encerrar o alerta", { description: "Verifique sua sessão de operador e tente novamente." });
+      return false;
+    }
+  }, [isOperator]);
 
   const pushEvent = useCallback((message: string, score: number, level: RiskAssessment["level"]) => {
     setSimulation((prev) =>
@@ -549,6 +748,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       databaseConnection,
       databaseError,
       alerts,
+      customRegions,
       filters,
       live,
       intervalMs,
@@ -558,6 +758,13 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       setIntervalMs,
       createAlert,
       closeAlert,
+      operatorEmail: authUser?.email ?? null,
+      isOperator,
+      isAdmin,
+      authLoading,
+      authConfigured: firebaseAuthConfigured,
+      signInOperator,
+      signOutOperator,
       sensorsIn,
       riskFor,
       // Monitoramento silencioso: nenhum pop-up automático fora da simulação.
@@ -577,7 +784,14 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       lastRealUpdate,
       databaseConnection,
       databaseError,
+      authUser,
+      isOperator,
+      isAdmin,
+      authLoading,
+      signInOperator,
+      signOutOperator,
       alerts,
+      customRegions,
       filters,
       live,
       intervalMs,

@@ -44,7 +44,7 @@ function deterministic(id: string, min: number, max: number) {
 }
 
 export function buildOccurrences(alerts: Alert[]): Occurrence[] {
-  return alerts.map((alert) => {
+  return alerts.filter((alert) => !alert.simulated).map((alert) => {
     const teams = teamsFor(alert.municipalityId);
     const team =
       teams.find((t) => t.activateAt === alert.level) ??

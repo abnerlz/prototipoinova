@@ -77,6 +77,8 @@ export interface Alert {
   closedAt?: number;
   status: "ativo" | "encerrado";
   origin: "ia" | "manual";
+  /** Alertas de simulação ficam apenas no navegador e não entram no histórico real. */
+  simulated?: boolean;
 }
 
 export interface PeriodOption {

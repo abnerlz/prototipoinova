@@ -60,8 +60,8 @@ export function EmitAlertButton() {
     if (first) setNeighborhoodId(first.id);
   };
 
-  const confirm = () => {
-    createAlert({
+  const confirm = async () => {
+    const saved = await createAlert({
       municipalityId,
       neighborhoodId,
       level,
@@ -73,6 +73,7 @@ export function EmitAlertButton() {
         .map((s) => s.id),
       origin,
     });
+    if (!saved) return;
     toast.success("Alerta emitido", {
       description: `${getNeighborhood(neighborhoodId)?.name} · nível ${RISK_LABEL[level]}`,
     });

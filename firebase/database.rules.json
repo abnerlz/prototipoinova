@@ -30,6 +30,67 @@
           ".validate": false
         }
       }
+    },
+    "alerts": {
+      ".read": true,
+      "$alertId": {
+        ".write": "auth != null && auth.token.email_verified == true && (auth.token.admin == true || auth.token.operator == true)",
+        ".validate": "newData.hasChildren(['municipalityId', 'neighborhoodId', 'level', 'description', 'sensorIds', 'createdAt', 'status', 'origin'])",
+        "municipalityId": { ".validate": "newData.isString() && newData.val() == 'recife'" },
+        "neighborhoodId": { ".validate": "newData.isString() && newData.val().length <= 128" },
+        "level": { ".validate": "newData.isString() && (newData.val() == 'baixo' || newData.val() == 'moderado' || newData.val() == 'alto' || newData.val() == 'critico')" },
+        "description": { ".validate": "newData.isString() && newData.val().length <= 2000" },
+        "sensorIds": { ".validate": "newData.isList()" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "closedAt": { ".validate": "newData.isNumber()" },
+        "status": { ".validate": "newData.isString() && (newData.val() == 'ativo' || newData.val() == 'encerrado')" },
+        "origin": { ".validate": "newData.isString() && (newData.val() == 'ia' || newData.val() == 'manual')" },
+        "$other": { ".validate": false }
+      }
+    },
+    "custom_regions": {
+      ".read": true,
+      "$regionId": {
+        ".write": "auth != null && auth.token.email_verified == true && (auth.token.admin == true || auth.token.operator == true)",
+        ".validate": "newData.hasChildren(['name', 'municipalityId', 'center', 'susceptibility', 'households', 'createdAt', 'createdBy'])",
+        "name": { ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 80" },
+        "municipalityId": { ".validate": "newData.isString() && newData.val() == 'recife'" },
+        "center": {
+          ".validate": "newData.hasChildren(['lat', 'lng'])",
+          "lat": { ".validate": "newData.isNumber() && newData.val() >= -90 && newData.val() <= 90" },
+          "lng": { ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180" },
+          "$other": { ".validate": false }
+        },
+        "susceptibility": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1" },
+        "households": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "createdBy": { ".validate": "newData.isString() && newData.val().length <= 254" },
+        "$other": { ".validate": false }
+      }
+    },
+    "reading_reviews": {
+      ".read": true,
+      "$readingId": {
+        ".write": "auth != null && auth.token.email_verified == true && (auth.token.admin == true || auth.token.operator == true)",
+        ".validate": "newData.hasChildren(['status', 'note', 'reviewedAt', 'reviewedBy'])",
+        "status": { ".validate": "newData.isString() && (newData.val() == 'validado' || newData.val() == 'inconsistente')" },
+        "note": { ".validate": "newData.isString() && newData.val().length <= 500" },
+        "reviewedAt": { ".validate": "newData.isNumber()" },
+        "reviewedBy": { ".validate": "newData.isString() && newData.val().length <= 254" },
+        "$other": { ".validate": false }
+      }
+    },
+    "sensor_reviews": {
+      ".read": true,
+      "$sensorId": {
+        ".write": "auth != null && auth.token.email_verified == true && (auth.token.admin == true || auth.token.operator == true)",
+        ".validate": "newData.hasChildren(['status', 'note', 'reviewedAt', 'reviewedBy'])",
+        "status": { ".validate": "newData.isString() && (newData.val() == 'funcionando' || newData.val() == 'investigar' || newData.val() == 'manutencao')" },
+        "note": { ".validate": "newData.isString() && newData.val().length <= 500" },
+        "reviewedAt": { ".validate": "newData.isNumber()" },
+        "reviewedBy": { ".validate": "newData.isString() && newData.val().length <= 254" },
+        "$other": { ".validate": false }
+      }
     }
   }
 }

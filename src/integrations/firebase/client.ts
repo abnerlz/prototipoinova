@@ -1,12 +1,25 @@
 import { getApps, initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 
+const apiKey = import.meta.env["VITE_FIREBASE_API_KEY"];
+const configuredDatabaseURL = import.meta.env["VITE_FIREBASE_DATABASE_URL"];
 const databaseURL =
-  import.meta.env["VITE_FIREBASE_DATABASE_URL"] ??
+  configuredDatabaseURL ??
   "https://proterra-sensors-default-rtdb.firebaseio.com/";
 
 const app =
   getApps().find((candidate) => candidate.name === "geoalerta-client") ??
-  initializeApp({ databaseURL }, "geoalerta-client");
+  initializeApp(
+    {
+      apiKey,
+      authDomain: import.meta.env["VITE_FIREBASE_AUTH_DOMAIN"] ?? "proterra-sensors.firebaseapp.com",
+      projectId: "proterra-sensors",
+      databaseURL,
+    },
+    "geoalerta-client",
+  );
 
 export const realtimeDatabase = getDatabase(app);
+export const firebaseAuth = getAuth(app);
+export const firebaseAuthConfigured = Boolean(apiKey);

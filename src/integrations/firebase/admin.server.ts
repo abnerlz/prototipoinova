@@ -1,7 +1,7 @@
 import type { App } from "firebase-admin/app";
 import type { Database, Reference } from "firebase-admin/database";
 
-async function getFirebaseAdminApp(): Promise<App> {
+export async function getFirebaseAdminApp(): Promise<App> {
   const { applicationDefault, cert, getApps, initializeApp } = await import("firebase-admin/app");
   const existing = getApps().find((candidate) => candidate.name === "geoalerta-server");
   if (existing) return existing;
@@ -15,6 +15,11 @@ async function getFirebaseAdminApp(): Promise<App> {
     : applicationDefault();
 
   return initializeApp({ credential, databaseURL }, "geoalerta-server");
+}
+
+export async function getFirebaseAdminAuth() {
+  const { getAuth } = await import("firebase-admin/auth");
+  return getAuth(await getFirebaseAdminApp());
 }
 
 export async function getSensorReadingsReference(): Promise<Reference> {

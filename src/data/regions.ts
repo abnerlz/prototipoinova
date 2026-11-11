@@ -26,6 +26,15 @@ export const NEIGHBORHOODS: Neighborhood[] = [
   },
 ];
 
+const BUILT_IN_NEIGHBORHOODS = [...NEIGHBORHOODS];
+
+/** Atualiza as regiões criadas por operadores sem substituir a lista compartilhada usada pelas telas. */
+export function replaceCustomNeighborhoods(custom: Neighborhood[]) {
+  const builtInIds = new Set(BUILT_IN_NEIGHBORHOODS.map((region) => region.id));
+  const uniqueCustom = custom.filter((region) => !builtInIds.has(region.id));
+  NEIGHBORHOODS.splice(0, NEIGHBORHOODS.length, ...BUILT_IN_NEIGHBORHOODS, ...uniqueCustom);
+}
+
 export const STATION = NEIGHBORHOODS[0];
 
 /** Os quatro tipos de sensor mantidos no protótipo. */
