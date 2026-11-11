@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   AlertTriangle,
   Accessibility,
+  ClipboardCheck,
   BrainCircuit,
   Cpu,
   FileBarChart,
@@ -15,9 +16,11 @@ import {
   Radio,
   ShieldAlert,
   Siren,
+  UserCog,
 } from "lucide-react";
 
 import { EmitAlertButton } from "@/components/alerts/EmitAlertButton";
+import { OperatorAccess } from "@/components/auth/OperatorAccess";
 import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
@@ -54,6 +57,12 @@ const NAV = [
 
 function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { isOperator, isAdmin } = useMonitoring();
+  const navItems = [
+    ...NAV,
+    ...(isOperator ? [{ title: "Operação", url: "/operacao", icon: ClipboardCheck }] : []),
+    ...(isAdmin ? [{ title: "Administração", url: "/administracao", icon: UserCog }] : []),
+  ];
 
   return (
     <Sidebar collapsible="icon" className="border-sidebar-border">
@@ -73,7 +82,7 @@ function AppSidebar() {
           <SidebarGroupLabel>Monitoramento</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {NAV.map((item) => {
+              {navItems.map((item) => {
                 const active = item.url === "/" ? pathname === "/" : pathname.startsWith(item.url);
                 return (
                   <SidebarMenuItem key={item.url}>
@@ -131,6 +140,7 @@ function TopBar() {
         <Badge variant="outline" className="border-primary/40 text-primary">
           Risco {RISK_LABEL[global.level]} · {global.score}
         </Badge>
+        <OperatorAccess />
       </div>
     </header>
   );

@@ -79,22 +79,15 @@ export function computeStatus(r: ReadingLike): { status: LocalStatus; reasons: s
   return { status: "NORMAL", reasons };
 }
 
-export const CORS_HEADERS: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "content-type, x-api-key, authorization, apikey",
-  "Access-Control-Max-Age": "86400",
-};
-
 export function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8", ...CORS_HEADERS },
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
   });
 }
 
 export function preflight(): Response {
-  return new Response(null, { status: 204, headers: CORS_HEADERS });
+  return new Response(null, { status: 204, headers: { "cache-control": "no-store" } });
 }
 
 const NUMERIC_FIELDS = [

@@ -108,6 +108,49 @@
   color-scheme: light;
 }
 
+.dark {
+  --background: oklch(0.17 0.026 184);
+  --foreground: oklch(0.95 0.008 155);
+  --card: oklch(0.216 0.026 180);
+  --card-foreground: oklch(0.95 0.008 155);
+  --popover: oklch(0.208 0.026 180);
+  --popover-foreground: oklch(0.95 0.008 155);
+  --primary: oklch(0.73 0.18 145);
+  --primary-foreground: oklch(0.17 0.03 180);
+  --secondary: oklch(0.28 0.03 180);
+  --secondary-foreground: oklch(0.93 0.01 155);
+  --muted: oklch(0.26 0.027 180);
+  --muted-foreground: oklch(0.72 0.023 170);
+  --accent: oklch(0.32 0.06 150);
+  --accent-foreground: oklch(0.95 0.01 155);
+  --destructive: oklch(0.61 0.2 25);
+  --destructive-foreground: oklch(0.97 0.01 155);
+  --border: oklch(0.32 0.028 180);
+  --input: oklch(0.3 0.028 180);
+  --ring: oklch(0.73 0.18 145);
+  --surface: oklch(0.23 0.026 180 / 72%);
+  --surface-strong: oklch(0.26 0.03 180 / 92%);
+  --risk-low: oklch(0.76 0.17 152);
+  --risk-medium: oklch(0.85 0.16 92);
+  --risk-high: oklch(0.75 0.17 55);
+  --risk-critical: oklch(0.65 0.21 25);
+  --chart-1: oklch(0.73 0.18 145);
+  --chart-2: oklch(0.76 0.17 152);
+  --chart-3: oklch(0.68 0.13 190);
+  --chart-4: oklch(0.75 0.17 55);
+  --chart-5: oklch(0.65 0.21 25);
+  --chart-6: oklch(0.72 0.13 205);
+  --sidebar: oklch(0.19 0.025 182);
+  --sidebar-foreground: oklch(0.92 0.01 155);
+  --sidebar-primary: oklch(0.73 0.18 145);
+  --sidebar-primary-foreground: oklch(0.17 0.03 180);
+  --sidebar-accent: oklch(0.27 0.04 165);
+  --sidebar-accent-foreground: oklch(0.95 0.01 155);
+  --sidebar-border: oklch(0.29 0.028 180);
+  --sidebar-ring: oklch(0.73 0.18 145);
+  color-scheme: dark;
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -126,6 +169,12 @@
       radial-gradient(circle at 12% -10%, oklch(0.8 0.08 145 / 16%), transparent 45%),
       radial-gradient(circle at 88% 0%, oklch(0.86 0.05 175 / 14%), transparent 40%);
     background-attachment: fixed;
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(circle at 12% -10%, oklch(0.4 0.11 145 / 20%), transparent 45%),
+      radial-gradient(circle at 88% 0%, oklch(0.36 0.08 185 / 18%), transparent 40%);
   }
 
   h1,
@@ -148,6 +197,15 @@
   background: var(--surface-strong);
   backdrop-filter: blur(22px) saturate(150%);
   border: 1px solid oklch(0.35 0.04 165 / 12%);
+}
+
+.dark .glass {
+  border-color: oklch(1 0 0 / 8%);
+  box-shadow: 0 18px 40px -28px oklch(0 0 0 / 90%);
+}
+
+.dark .glass-strong {
+  border-color: oklch(1 0 0 / 10%);
 }
 
 @utility grid-scan {
@@ -206,6 +264,9 @@
   background: var(--background);
   font-family: var(--font-sans);
 }
+.dark .leaflet-tile {
+  filter: brightness(0.62) invert(1) contrast(3) hue-rotate(200deg) saturate(0.35) brightness(0.75);
+}
 .leaflet-control-zoom a,
 .leaflet-bar a {
   background: var(--card) !important;
@@ -223,11 +284,15 @@
   color: var(--muted-foreground) !important;
 }
 
-html[data-font-size="large"] {
+html[data-font-scale="large"] {
   font-size: 18px;
 }
 
-html[data-high-contrast="true"] {
+html[data-font-scale="largest"] {
+  font-size: 20px;
+}
+
+html:not(.dark)[data-high-contrast="true"] {
   --background: oklch(1 0 0);
   --foreground: oklch(0.12 0 0);
   --card: oklch(1 0 0);
@@ -241,6 +306,21 @@ html[data-high-contrast="true"] {
   --sidebar-foreground: oklch(0.12 0 0);
 }
 
+html.dark[data-high-contrast="true"] {
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(0.99 0 0);
+  --card: oklch(0.12 0 0);
+  --card-foreground: oklch(0.99 0 0);
+  --popover: oklch(0.12 0 0);
+  --popover-foreground: oklch(0.99 0 0);
+  --muted: oklch(0.2 0 0);
+  --muted-foreground: oklch(0.85 0 0);
+  --border: oklch(0.72 0 0);
+  --input: oklch(0.72 0 0);
+  --sidebar: oklch(0.1 0 0);
+  --sidebar-foreground: oklch(0.99 0 0);
+}
+
 html[data-high-contrast="true"] :focus-visible {
   outline: 3px solid var(--ring);
   outline-offset: 3px;
@@ -249,6 +329,15 @@ html[data-high-contrast="true"] :focus-visible {
 html[data-underline-links="true"] a {
   text-decoration: underline;
   text-underline-offset: 0.18em;
+}
+
+html[data-spacious-spacing="true"] body {
+  line-height: 1.8;
+  letter-spacing: 0.02em;
+}
+
+html[data-large-targets="true"] :is(button, [role="switch"], select, input) {
+  min-height: 44px;
 }
 
 html[data-reduce-motion="true"] *,
