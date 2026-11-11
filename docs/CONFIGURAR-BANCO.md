@@ -40,7 +40,7 @@ Cada leitura fica como um filho de `/sensor_readings`, criado com uma chave `pus
 }
 ```
 
-Leituras novas devem incluir `created_at` em ISO 8601. Para dados antigos sem esse campo, o painel recupera o horário de criação da chave push do Firebase.
+Inclua `created_at` em ISO 8601 quando possível. Se o ESP32 não enviar esse campo, a regra aceita a leitura e o painel recupera o horário pela chave push do Firebase. Esse horário corresponde ao momento em que o registro foi criado no banco.
 
 ## Diagnóstico
 

@@ -7,7 +7,7 @@
       ".indexOn": ["sensor_id"],
       "$readingId": {
         ".write": "auth != null && auth.token.email == 'esp32-device@example.com' && !data.exists()",
-        ".validate": "newData.hasChildren(['sensor_id', 'umidade_solo', 'inclinacao', 'vibracao', 'chuva', 'created_at'])",
+        ".validate": "newData.hasChildren(['sensor_id', 'umidade_solo', 'inclinacao', 'vibracao', 'chuva'])",
         "sensor_id": {
           ".validate": "newData.isString() && newData.val() == 'bancada_esp32_01'"
         },
@@ -24,7 +24,7 @@
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000"
         },
         "created_at": {
-          ".validate": "newData.isString()"
+          ".validate": "newData.isString() && newData.val().length <= 40"
         },
         "$other": {
           ".validate": false
