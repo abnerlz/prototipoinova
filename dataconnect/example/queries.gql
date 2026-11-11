@@ -1,0 +1,157 @@
+mutation InsertProduct($data: Product_Data!) @auth(level: USER) {
+  product_insert(data: $data)
+}
+
+mutation UpdateProduct($id: UUID!, $data: Product_Data!) @auth(level: USER) {
+  product_update(id: $id, data: $data)
+}
+
+mutation DeleteProduct($id: UUID!) @auth(level: USER) {
+  product_delete(id: $id)
+}
+
+query GetProduct($id: UUID!) @auth(level: PUBLIC, insecureReason: "Public product catalog") {
+  product(id: $id) {
+    name
+    sku
+    brandOwner { name }
+  }
+}
+
+query ListProducts @auth(level: PUBLIC, insecureReason: "Public product catalog") {
+  products {
+    name
+    sku
+  }
+}
+
+mutation InsertOrganization($data: Organization_Data!) @auth(level: USER) {
+  organization_insert(data: $data)
+}
+
+mutation UpdateOrganization($id: UUID!, $data: Organization_Data!) @auth(level: USER) {
+  organization_update(id: $id, data: $data)
+}
+
+mutation DeleteOrganization($id: UUID!) @auth(level: USER) {
+  organization_delete(id: $id)
+}
+
+query GetOrganization($id: UUID!) @auth(level: PUBLIC, insecureReason: "Public directory") {
+  organization(id: $id) {
+    name
+    contactEmail
+  }
+}
+
+query ListOrganizations @auth(level: PUBLIC, insecureReason: "Public directory") {
+  organizations {
+    name
+    type
+  }
+}
+
+mutation InsertMaterial($data: Material_Data!) @auth(level: USER) {
+  material_insert(data: $data)
+}
+
+mutation UpdateMaterial($id: UUID!, $data: Material_Data!) @auth(level: USER) {
+  material_update(id: $id, data: $data)
+}
+
+mutation DeleteMaterial($id: UUID!) @auth(level: USER) {
+  material_delete(id: $id)
+}
+
+query GetMaterial($id: UUID!) @auth(level: PUBLIC, insecureReason: "Public material data") {
+  material(id: $id) {
+    name
+    sustainabilityScore
+  }
+}
+
+query ListMaterials @auth(level: PUBLIC, insecureReason: "Public material data") {
+  materials {
+    name
+    sustainabilityScore
+  }
+}
+
+mutation InsertBatch($data: Batch_Data!) @auth(level: USER) {
+  batch_insert(data: $data)
+}
+
+mutation UpdateBatch($id: UUID!, $data: Batch_Data!) @auth(level: USER) {
+  batch_update(id: $id, data: $data)
+}
+
+mutation DeleteBatch($id: UUID!) @auth(level: USER) {
+  batch_delete(id: $id)
+}
+
+query GetBatch($id: UUID!) @auth(level: USER) {
+  batch(id: $id) {
+    manufacturingDate
+    carbonFootprintMetric
+  }
+}
+
+query ListBatches @auth(level: USER) {
+  batches {
+    product { name }
+    status
+  }
+}
+
+mutation InsertMovement($data: Movement_Data!) @auth(level: USER) {
+  movement_insert(data: $data)
+}
+
+mutation UpdateMovement($id: UUID!, $data: Movement_Data!) @auth(level: USER) {
+  movement_update(id: $id, data: $data)
+}
+
+mutation DeleteMovement($id: UUID!) @auth(level: USER) {
+  movement_delete(id: $id)
+}
+
+query GetMovement($id: UUID!) @auth(level: USER) {
+  movement(id: $id) {
+    timestamp
+    transportMode
+  }
+}
+
+query ListMovements @auth(level: USER) {
+  movements {
+    batch { product { name } }
+    origin { name }
+    destination { name }
+  }
+}
+
+mutation InsertCertification($data: Certification_Data!) @auth(level: USER) {
+  certification_insert(data: $data)
+}
+
+mutation UpdateCertification($id: UUID!, $data: Certification_Data!) @auth(level: USER) {
+  certification_update(id: $id, data: $data)
+}
+
+mutation DeleteCertification($id: UUID!) @auth(level: USER) {
+  certification_delete(id: $id)
+}
+
+query GetCertification($id: UUID!) @auth(level: PUBLIC, insecureReason: "Public certification registry") {
+  certification(id: $id) {
+    name
+    expiryDate
+  }
+}
+
+query ListCertifications @auth(level: PUBLIC, insecureReason: "Public certification registry") {
+  certifications {
+    name
+    issuer
+  }
+}

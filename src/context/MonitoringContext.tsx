@@ -120,7 +120,8 @@ function parseStoredAlert(id: string, value: unknown): Alert | null {
     typeof row["neighborhoodId"] !== "string" ||
     typeof row["level"] !== "string" || !VALID_RISK_LEVELS.has(row["level"] as RiskAssessment["level"]) ||
     typeof row["description"] !== "string" ||
-    !Array.isArray(row["sensorIds"]) || !row["sensorIds"].every((sensorId) => typeof sensorId === "string") ||
+    (row["sensorIds"] !== undefined && row["sensorIds"] !== null &&
+      (!Array.isArray(row["sensorIds"]) || !row["sensorIds"].every((sensorId) => typeof sensorId === "string"))) ||
     typeof row["createdAt"] !== "number" || !Number.isFinite(row["createdAt"]) ||
     (row["status"] !== "ativo" && row["status"] !== "encerrado") ||
     (row["origin"] !== "ia" && row["origin"] !== "manual")
@@ -132,7 +133,7 @@ function parseStoredAlert(id: string, value: unknown): Alert | null {
     neighborhoodId: row["neighborhoodId"],
     level: row["level"] as Alert["level"],
     description: row["description"],
-    sensorIds: row["sensorIds"] as string[],
+    sensorIds: Array.isArray(row["sensorIds"]) ? row["sensorIds"] as string[] : [],
     createdAt: row["createdAt"],
     ...(typeof row["closedAt"] === "number" ? { closedAt: row["closedAt"] } : {}),
     status: row["status"],

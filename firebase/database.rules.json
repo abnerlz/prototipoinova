@@ -7,7 +7,7 @@
       ".indexOn": ["sensor_id"],
       "$readingId": {
         ".write": "auth != null && auth.token.email == 'esp32-device@example.com' && !data.exists()",
-        ".validate": "newData.hasChildren(['sensor_id', 'umidade_solo', 'inclinacao', 'vibracao', 'chuva', 'created_at'])",
+        ".validate": "newData.hasChildren(['sensor_id', 'umidade_solo', 'inclinacao', 'vibracao', 'chuva'])",
         "sensor_id": {
           ".validate": "newData.isString() && newData.val() == 'bancada_esp32_01'"
         },
@@ -24,7 +24,7 @@
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000"
         },
         "created_at": {
-          ".validate": "newData.isString()"
+          ".validate": "newData.isString() && newData.val().length <= 40"
         },
         "$other": {
           ".validate": false
@@ -35,12 +35,15 @@
       ".read": true,
       "$alertId": {
         ".write": "auth != null && auth.token.email_verified == true && (auth.token.admin == true || auth.token.operator == true)",
-        ".validate": "newData.hasChildren(['municipalityId', 'neighborhoodId', 'level', 'description', 'sensorIds', 'createdAt', 'status', 'origin'])",
+        ".validate": "newData.hasChildren(['municipalityId', 'neighborhoodId', 'level', 'description', 'createdAt', 'status', 'origin'])",
         "municipalityId": { ".validate": "newData.isString() && newData.val() == 'recife'" },
         "neighborhoodId": { ".validate": "newData.isString() && newData.val().length <= 128" },
         "level": { ".validate": "newData.isString() && (newData.val() == 'baixo' || newData.val() == 'moderado' || newData.val() == 'alto' || newData.val() == 'critico')" },
         "description": { ".validate": "newData.isString() && newData.val().length <= 2000" },
-        "sensorIds": { ".validate": "newData.isList()" },
+        "sensorIds": {
+          ".validate": "newData.hasChildren()",
+          "$sensorIndex": { ".validate": "newData.isString() && newData.val().length <= 128" }
+        },
         "createdAt": { ".validate": "newData.isNumber()" },
         "closedAt": { ".validate": "newData.isNumber()" },
         "status": { ".validate": "newData.isString() && (newData.val() == 'ativo' || newData.val() == 'encerrado')" },

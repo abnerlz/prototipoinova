@@ -1,0 +1,27 @@
+mutation CreateSeedData @transaction {
+  organization_insertMany(data: [
+    { id: "e0c7a8b0-0000-4000-8000-000000000001", name: "EcoFabric Inc", type: "Supplier", location: "Portland, OR", contactEmail: "sales@ecofabric.com", websiteUrl: "https://ecofabric.com" },
+    { id: "e0c7a8b0-0000-4000-8000-000000000002", name: "GreenThreads LLC", type: "Brand", location: "Austin, TX", contactEmail: "info@greenthreads.com", websiteUrl: "https://greenthreads.com" },
+    { id: "e0c7a8b0-0000-4000-8000-000000000003", name: "Logistics Pro", type: "Transport", location: "Chicago, IL", contactEmail: "dispatch@logpro.com", websiteUrl: "https://logpro.com" }
+  ])
+  product_insertMany(data: [
+    { id: "f1c7a8b0-0000-4000-8000-000000000001", name: "Organic Cotton T-Shirt", sku: "OCT-001", brandOwnerId: "e0c7a8b0-0000-4000-8000-000000000002", description: "Premium organic cotton", category: "Apparel" },
+    { id: "f1c7a8b0-0000-4000-8000-000000000002", name: "Recycled Denim Jeans", sku: "RDJ-002", brandOwnerId: "e0c7a8b0-0000-4000-8000-000000000002", description: "Made from recycled denim", category: "Apparel" }
+  ])
+  material_insertMany(data: [
+    { id: "b2c7a8b0-0000-4000-8000-000000000001", name: "Organic Cotton", sustainabilityScore: 95, supplierId: "e0c7a8b0-0000-4000-8000-000000000001", certificationDetails: "GOTS Certified" },
+    { id: "b2c7a8b0-0000-4000-8000-000000000002", name: "Recycled Cotton", sustainabilityScore: 88, supplierId: "e0c7a8b0-0000-4000-8000-000000000001", certificationDetails: "GRS Certified" }
+  ])
+  batch_insertMany(data: [
+    { id: "a3c7a8b0-0000-4000-8000-000000000001", productId: "f1c7a8b0-0000-4000-8000-000000000001", manufacturingDate: "2023-10-01", carbonFootprintMetric: 2.5, status: "Produced" },
+    { id: "a3c7a8b0-0000-4000-8000-000000000002", productId: "f1c7a8b0-0000-4000-8000-000000000002", manufacturingDate: "2023-11-15", carbonFootprintMetric: 5.1, status: "In Transit" }
+  ])
+  movement_insertMany(data: [
+    { id: "d4c7a8b0-0000-4000-8000-000000000001", batchId: "a3c7a8b0-0000-4000-8000-000000000001", originId: "e0c7a8b0-0000-4000-8000-000000000001", destinationId: "e0c7a8b0-0000-4000-8000-000000000002", timestamp: "2023-10-05T10:00:00Z", transportMode: "Truck" },
+    { id: "d4c7a8b0-0000-4000-8000-000000000002", batchId: "a3c7a8b0-0000-4000-8000-000000000002", originId: "e0c7a8b0-0000-4000-8000-000000000001", destinationId: "e0c7a8b0-0000-4000-8000-000000000003", timestamp: "2023-11-20T14:30:00Z", transportMode: "Sea" }
+  ])
+  certification_insertMany(data: [
+    { id: "c5c7a8b0-0000-4000-8000-000000000001", name: "GOTS", issuer: "Global Standard", expiryDate: "2025-12-31", materialId: "b2c7a8b0-0000-4000-8000-000000000001", organizationId: "e0c7a8b0-0000-4000-8000-000000000001" },
+    { id: "c5c7a8b0-0000-4000-8000-000000000002", name: "GRS", issuer: "Textile Exchange", expiryDate: "2024-06-30", materialId: "b2c7a8b0-0000-4000-8000-000000000002", organizationId: "e0c7a8b0-0000-4000-8000-000000000001" }
+  ])
+}
