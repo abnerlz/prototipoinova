@@ -35,12 +35,15 @@
       ".read": true,
       "$alertId": {
         ".write": "auth != null && auth.token.email_verified == true && (auth.token.admin == true || auth.token.operator == true)",
-        ".validate": "newData.hasChildren(['municipalityId', 'neighborhoodId', 'level', 'description', 'sensorIds', 'createdAt', 'status', 'origin'])",
+        ".validate": "newData.hasChildren(['municipalityId', 'neighborhoodId', 'level', 'description', 'createdAt', 'status', 'origin'])",
         "municipalityId": { ".validate": "newData.isString() && newData.val() == 'recife'" },
         "neighborhoodId": { ".validate": "newData.isString() && newData.val().length <= 128" },
         "level": { ".validate": "newData.isString() && (newData.val() == 'baixo' || newData.val() == 'moderado' || newData.val() == 'alto' || newData.val() == 'critico')" },
         "description": { ".validate": "newData.isString() && newData.val().length <= 2000" },
-        "sensorIds": { ".validate": "newData.isList()" },
+        "sensorIds": {
+          ".validate": "newData.hasChildren()",
+          "$sensorIndex": { ".validate": "newData.isString() && newData.val().length <= 128" }
+        },
         "createdAt": { ".validate": "newData.isNumber()" },
         "closedAt": { ".validate": "newData.isNumber()" },
         "status": { ".validate": "newData.isString() && (newData.val() == 'ativo' || newData.val() == 'encerrado')" },
