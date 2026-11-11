@@ -40,10 +40,10 @@ export const RISK_LABEL: Record<RiskLevel, string> = {
 };
 
 export const RISK_COLOR: Record<RiskLevel, string> = {
-  baixo: "#22c55e",
-  moderado: "#facc15",
-  alto: "#f97316",
-  critico: "#ef4444",
+  baixo: "#16803c",
+  moderado: "#946200",
+  alto: "#b94700",
+  critico: "#c62828",
 };
 
 export const RISK_TOKEN: Record<RiskLevel, string> = {

@@ -5,8 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system — Centro de Operações de Monitoramento de Encostas.
- * Tema escuro operacional, superfícies em vidro e escala de risco semântica.
+ * Design system — ProTerra, tema claro e escala de risco semântica.
  */
 
 @theme inline {
@@ -61,52 +60,52 @@
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
-:root,
-.dark {
+:root {
   --radius: 0.75rem;
-  --background: oklch(0.17 0.026 184);
-  --foreground: oklch(0.95 0.008 155);
-  --card: oklch(0.216 0.026 180);
-  --card-foreground: oklch(0.95 0.008 155);
-  --popover: oklch(0.208 0.026 180);
-  --popover-foreground: oklch(0.95 0.008 155);
-  --primary: oklch(0.73 0.18 145);
-  --primary-foreground: oklch(0.17 0.03 180);
-  --secondary: oklch(0.28 0.03 180);
-  --secondary-foreground: oklch(0.93 0.01 155);
-  --muted: oklch(0.26 0.027 180);
-  --muted-foreground: oklch(0.72 0.023 170);
-  --accent: oklch(0.32 0.06 150);
-  --accent-foreground: oklch(0.95 0.01 155);
-  --destructive: oklch(0.61 0.2 25);
-  --destructive-foreground: oklch(0.97 0.01 155);
-  --border: oklch(0.32 0.028 180);
-  --input: oklch(0.3 0.028 180);
-  --ring: oklch(0.73 0.18 145);
+  --background: oklch(0.985 0.008 150);
+  --foreground: oklch(0.22 0.025 178);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.025 178);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.025 178);
+  --primary: oklch(0.47 0.13 145);
+  --primary-foreground: oklch(0.99 0.005 150);
+  --secondary: oklch(0.95 0.02 150);
+  --secondary-foreground: oklch(0.28 0.04 165);
+  --muted: oklch(0.96 0.01 155);
+  --muted-foreground: oklch(0.46 0.025 175);
+  --accent: oklch(0.93 0.04 150);
+  --accent-foreground: oklch(0.25 0.05 160);
+  --destructive: oklch(0.53 0.19 26);
+  --destructive-foreground: oklch(0.99 0.005 25);
+  --border: oklch(0.87 0.02 160);
+  --input: oklch(0.9 0.016 160);
+  --ring: oklch(0.47 0.13 145);
 
-  --surface: oklch(0.23 0.026 180 / 72%);
-  --surface-strong: oklch(0.26 0.03 180 / 92%);
+  --surface: oklch(1 0 0 / 92%);
+  --surface-strong: oklch(1 0 0 / 98%);
 
-  --risk-low: oklch(0.76 0.17 152);
-  --risk-medium: oklch(0.85 0.16 92);
-  --risk-high: oklch(0.75 0.17 55);
-  --risk-critical: oklch(0.65 0.21 25);
+  --risk-low: oklch(0.46 0.13 148);
+  --risk-medium: oklch(0.58 0.14 86);
+  --risk-high: oklch(0.58 0.17 48);
+  --risk-critical: oklch(0.53 0.19 26);
 
-  --chart-1: oklch(0.73 0.18 145);
-  --chart-2: oklch(0.76 0.17 152);
-  --chart-3: oklch(0.68 0.13 190);
-  --chart-4: oklch(0.75 0.17 55);
-  --chart-5: oklch(0.65 0.21 25);
-  --chart-6: oklch(0.72 0.13 205);
+  --chart-1: oklch(0.47 0.13 145);
+  --chart-2: oklch(0.55 0.14 160);
+  --chart-3: oklch(0.48 0.11 205);
+  --chart-4: oklch(0.64 0.15 80);
+  --chart-5: oklch(0.56 0.18 35);
+  --chart-6: oklch(0.48 0.13 250);
 
-  --sidebar: oklch(0.19 0.025 182);
-  --sidebar-foreground: oklch(0.92 0.01 155);
-  --sidebar-primary: oklch(0.73 0.18 145);
-  --sidebar-primary-foreground: oklch(0.17 0.03 180);
-  --sidebar-accent: oklch(0.27 0.04 165);
-  --sidebar-accent-foreground: oklch(0.95 0.01 155);
-  --sidebar-border: oklch(0.29 0.028 180);
-  --sidebar-ring: oklch(0.73 0.18 145);
+  --sidebar: oklch(0.965 0.018 150);
+  --sidebar-foreground: oklch(0.22 0.025 178);
+  --sidebar-primary: oklch(0.47 0.13 145);
+  --sidebar-primary-foreground: oklch(0.99 0.005 150);
+  --sidebar-accent: oklch(0.92 0.04 150);
+  --sidebar-accent-foreground: oklch(0.25 0.05 160);
+  --sidebar-border: oklch(0.87 0.02 160);
+  --sidebar-ring: oklch(0.47 0.13 145);
+  color-scheme: light;
 }
 
 @layer base {
@@ -114,13 +113,18 @@
     border-color: var(--color-border);
   }
 
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     background-image:
-      radial-gradient(circle at 12% -10%, oklch(0.4 0.11 145 / 20%), transparent 45%),
-      radial-gradient(circle at 88% 0%, oklch(0.36 0.08 185 / 18%), transparent 40%);
+      radial-gradient(circle at 12% -10%, oklch(0.8 0.08 145 / 16%), transparent 45%),
+      radial-gradient(circle at 88% 0%, oklch(0.86 0.05 175 / 14%), transparent 40%);
     background-attachment: fixed;
   }
 
@@ -136,19 +140,19 @@
 @utility glass {
   background: var(--surface);
   backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid oklch(1 0 0 / 8%);
-  box-shadow: 0 18px 40px -28px oklch(0 0 0 / 90%);
+  border: 1px solid oklch(0.35 0.04 165 / 10%);
+  box-shadow: 0 18px 40px -28px oklch(0.25 0.04 165 / 22%);
 }
 
 @utility glass-strong {
   background: var(--surface-strong);
   backdrop-filter: blur(22px) saturate(150%);
-  border: 1px solid oklch(1 0 0 / 10%);
+  border: 1px solid oklch(0.35 0.04 165 / 12%);
 }
 
 @utility grid-scan {
-  background-image: linear-gradient(oklch(1 0 0 / 4%) 1px, transparent 1px),
-    linear-gradient(90deg, oklch(1 0 0 / 4%) 1px, transparent 1px);
+  background-image: linear-gradient(oklch(0.3 0.03 165 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.3 0.03 165 / 5%) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
@@ -197,13 +201,10 @@
 
 
 
-/* Leaflet em tema escuro */
+/* Leaflet em tema claro */
 .leaflet-container {
   background: var(--background);
   font-family: var(--font-sans);
-}
-.leaflet-tile {
-  filter: brightness(0.62) invert(1) contrast(3) hue-rotate(200deg) saturate(0.35) brightness(0.75);
 }
 .leaflet-control-zoom a,
 .leaflet-bar a {
@@ -220,4 +221,41 @@
 .leaflet-control-attribution {
   background: var(--surface-strong) !important;
   color: var(--muted-foreground) !important;
+}
+
+html[data-font-size="large"] {
+  font-size: 18px;
+}
+
+html[data-high-contrast="true"] {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.12 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.12 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.12 0 0);
+  --muted-foreground: oklch(0.3 0 0);
+  --border: oklch(0.48 0 0);
+  --input: oklch(0.48 0 0);
+  --sidebar: oklch(0.96 0 0);
+  --sidebar-foreground: oklch(0.12 0 0);
+}
+
+html[data-high-contrast="true"] :focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+html[data-underline-links="true"] a {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+html[data-reduce-motion="true"] *,
+html[data-reduce-motion="true"] *::before,
+html[data-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
 }
