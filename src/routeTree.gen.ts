@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AcessibilidadeRouteImport } from './routes/acessibilidade'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as ApoioDecisaoRouteImport } from './routes/apoio-decisao'
 import { Route as CentralInteligenciaRouteImport } from './routes/central-inteligencia'
@@ -36,6 +37,11 @@ import { Route as ApiPublicSensoresSensorIdLatestRouteImport } from './routes/ap
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AcessibilidadeRoute = AcessibilidadeRouteImport.update({
+  id: '/acessibilidade',
+  path: '/acessibilidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlertasRoute = AlertasRouteImport.update({
@@ -157,6 +163,7 @@ const ApiPublicSensoresSensorIdLatestRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/acessibilidade': typeof AcessibilidadeRoute
   '/alertas': typeof AlertasRoute
   '/apoio-decisao': typeof ApoioDecisaoRoute
   '/central-inteligencia': typeof CentralInteligenciaRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/acessibilidade': typeof AcessibilidadeRoute
   '/alertas': typeof AlertasRoute
   '/apoio-decisao': typeof ApoioDecisaoRoute
   '/central-inteligencia': typeof CentralInteligenciaRoute
@@ -208,6 +216,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/acessibilidade': typeof AcessibilidadeRoute
   '/alertas': typeof AlertasRoute
   '/apoio-decisao': typeof ApoioDecisaoRoute
   '/central-inteligencia': typeof CentralInteligenciaRoute
@@ -235,6 +244,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/acessibilidade'
     | '/alertas'
     | '/apoio-decisao'
     | '/central-inteligencia'
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/acessibilidade'
     | '/alertas'
     | '/apoio-decisao'
     | '/central-inteligencia'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/acessibilidade'
     | '/alertas'
     | '/apoio-decisao'
     | '/central-inteligencia'
@@ -311,6 +323,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AcessibilidadeRoute: typeof AcessibilidadeRoute
   AlertasRoute: typeof AlertasRoute
   ApoioDecisaoRoute: typeof ApoioDecisaoRoute
   CentralInteligenciaRoute: typeof CentralInteligenciaRoute
@@ -333,6 +346,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/acessibilidade': {
+      id: '/acessibilidade'
+      path: '/acessibilidade'
+      fullPath: '/acessibilidade'
+      preLoaderRoute: typeof AcessibilidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -526,6 +546,7 @@ const ApiPublicSensoresRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AcessibilidadeRoute: AcessibilidadeRoute,
   AlertasRoute: AlertasRoute,
   ApoioDecisaoRoute: ApoioDecisaoRoute,
   CentralInteligenciaRoute: CentralInteligenciaRoute,

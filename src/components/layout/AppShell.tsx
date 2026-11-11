@@ -1,7 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 import {
   AlertTriangle,
+  Accessibility,
   BrainCircuit,
   Cpu,
   FileBarChart,
@@ -45,6 +48,7 @@ const NAV = [
   { title: "Central de Inteligência", url: "/central-inteligencia", icon: BrainCircuit },
   { title: "Inteligência Artificial", url: "/ia", icon: BrainCircuit },
   { title: "Apoio à Decisão", url: "/apoio-decisao", icon: ShieldAlert },
+  { title: "Acessibilidade", url: "/acessibilidade", icon: Accessibility },
 
 ] as const;
 
@@ -132,44 +136,90 @@ function TopBar() {
   );
 }
 
+function OperationalNotifications() {
+  const { mode, databaseConnection, databaseError, sensors, lastRealUpdate } = useMonitoring();
+  const previousConnection = useRef<typeof databaseConnection | null>(null);
+  const wasStale = useRef(false);
+  const showedPrototypeNotice = useRef(false);
+
+  useEffect(() => {
+    if (mode === "simulacao") {
+      toast.warning("Modo de simulação", {
+        id: "simulation-mode",
+        description: "Os valores exibidos são fictícios e não representam medições reais.",
+        duration: 9000,
+      });
+    } else {
+      toast.dismiss("simulation-mode");
+    }
+  }, [mode]);
+
+  useEffect(() => {
+    const previous = previousConnection.current;
+    previousConnection.current = databaseConnection;
+    if (mode !== "real") return;
+
+    if (databaseConnection === "erro") {
+      toast.error("Falha ao conectar ao banco", {
+        id: "database-status",
+        description: databaseError ?? "Verifique a conexão e as regras do Firebase Realtime Database.",
+        duration: 12_000,
+      });
+    } else if (databaseConnection === "sem_dados") {
+      toast.warning("Banco conectado, sem leituras", {
+        id: "database-status",
+        description: "Ainda não há dados do sensor para mostrar.",
+        duration: 10_000,
+      });
+    } else if (databaseConnection === "conectado" && previous && previous !== "conectado") {
+      toast.success("Banco conectado", {
+        id: "database-status",
+        description: "A comunicação com o Firebase foi restabelecida.",
+        duration: 6000,
+      });
+    } else if (databaseConnection === "conectando") {
+      toast.dismiss("database-status");
+    }
+  }, [mode, databaseConnection, databaseError]);
+
+  useEffect(() => {
+    if (mode !== "real" || databaseConnection !== "conectado") return;
+    const stale = sensors.length > 0 && sensors.every((sensor) => sensor.status === "offline");
+
+    if (stale && !wasStale.current) {
+      toast.error("Leitura do sensor desatualizada", {
+        id: "sensor-stale",
+        description: `O banco responde, mas o sensor não envia dados recentes${lastRealUpdate ? `; última leitura: ${new Date(lastRealUpdate).toLocaleString("pt-BR")}` : ""}. Não trate os dados como monitoramento ao vivo.`,
+        duration: 14_000,
+      });
+    } else if (!stale && wasStale.current) {
+      toast.dismiss("sensor-stale");
+    }
+    wasStale.current = stale;
+  }, [mode, databaseConnection, sensors, lastRealUpdate]);
+
+  useEffect(() => {
+    if (mode !== "real" || showedPrototypeNotice.current) return;
+    showedPrototypeNotice.current = true;
+    toast.info("Aviso sobre o protótipo", {
+      id: "prototype-coverage",
+      description: "Há uma unidade configurada no Ibura; as demais áreas não têm cobertura real. O índice é experimental e não substitui avaliação técnica ou decisão da Defesa Civil.",
+      duration: 15_000,
+    });
+  }, [mode]);
+
+  return null;
+}
+
 /** Shell da aplicação: sidebar recolhível, navbar fixa e botão de alerta global. */
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { mode, databaseConnection, databaseError, sensors, lastRealUpdate } = useMonitoring();
   return (
     <SidebarProvider>
+      <OperationalNotifications />
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar />
-          <div className="space-y-2 px-3 pt-3 sm:px-5">
-            {mode === "simulacao" ? (
-              <div role="status" className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-900 dark:text-amber-200">
-                SIMULAÇÃO: os valores exibidos são fictícios e não representam medições reais.
-              </div>
-            ) : databaseConnection === "erro" ? (
-              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive">
-                Não foi possível ler os sensores no banco. {databaseError ? `Detalhe: ${databaseError}` : "Verifique a conexão e as regras do Firebase Realtime Database."}
-              </div>
-            ) : databaseConnection === "sem_dados" ? (
-              <div role="status" className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-900 dark:text-amber-200">
-                Banco conectado, mas ainda não há leituras para este sensor.
-              </div>
-            ) : null}
-            {mode === "real" && (
-              <div role="note" className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2 text-xs text-muted-foreground">
-                Cobertura real configurada neste protótipo: uma unidade (bancada_esp32_01) no Ibura. As demais áreas ainda não têm sensores conectados; os mapas e índices regionais não representam cobertura real.
-              </div>
-            )}
-            {mode === "real" && databaseConnection === "conectado" && sensors.length > 0 && sensors.every((sensor) => sensor.status === "offline") && (
-              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive">
-                O banco responde, mas a última leitura do sensor está antiga. Não trate esses dados como monitoramento ao vivo.
-                {lastRealUpdate ? ` Última leitura: ${new Date(lastRealUpdate).toLocaleString("pt-BR")}.` : ""}
-              </div>
-            )}
-            <div className="rounded-lg border border-border bg-muted/50 px-4 py-2 text-xs text-muted-foreground">
-              Protótipo de demonstração: alertas ficam apenas nesta sessão, e o índice não foi validado. Não substitui avaliação técnica nem decisão da Defesa Civil.
-            </div>
-          </div>
           <motion.main
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}

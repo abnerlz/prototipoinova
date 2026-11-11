@@ -7,13 +7,15 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { MotionConfig } from "framer-motion";
 
 import { AppShell } from "@/components/layout/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 import { MonitoringProvider } from "@/context/MonitoringContext";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { applyAccessibilityPreferences, readAccessibilityPreferences } from "@/lib/accessibility";
 
 function NotFoundComponent() {
   return (
@@ -112,7 +114,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
@@ -126,16 +128,30 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    const syncPreferences = () => {
+      const preferences = readAccessibilityPreferences();
+      applyAccessibilityPreferences(preferences);
+      setReduceMotion(preferences.reduceMotion);
+    };
+    syncPreferences();
+    window.addEventListener("proterra:accessibility-preferences", syncPreferences);
+    return () => window.removeEventListener("proterra:accessibility-preferences", syncPreferences);
+  }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <MonitoringProvider>
-        <AppShell>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-        </AppShell>
-        <Toaster position="top-right" richColors />
-      </MonitoringProvider>
-    </QueryClientProvider>
+    <MotionConfig reducedMotion={reduceMotion ? "always" : "never"}>
+      <QueryClientProvider client={queryClient}>
+        <MonitoringProvider>
+          <AppShell>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </AppShell>
+          <Toaster position="bottom-right" offset={84} richColors />
+        </MonitoringProvider>
+      </QueryClientProvider>
+    </MotionConfig>
   );
 }
