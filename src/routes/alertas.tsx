@@ -56,7 +56,7 @@ function AlertList({ items, onClose }: { items: Alert[]; onClose?: (id: string) 
 }
 
 function AlertasPage() {
-  const { alerts, closeAlert, filters } = useMonitoring();
+  const { alerts, closeAlert, filters, isOperator } = useMonitoring();
   const filtered = alerts.filter(
     (a) =>
       (filters.municipalityId === "all" || a.municipalityId === filters.municipalityId) &&
@@ -98,7 +98,7 @@ function AlertasPage() {
               <TabsTrigger value="historico">Histórico</TabsTrigger>
             </TabsList>
             <TabsContent value="ativos" className="mt-4">
-              <AlertList items={filtered.filter((a) => a.status === "ativo")} onClose={closeAlert} />
+              <AlertList items={filtered.filter((a) => a.status === "ativo")} onClose={isOperator ? closeAlert : undefined} />
             </TabsContent>
             <TabsContent value="encerrados" className="mt-4">
               <AlertList items={filtered.filter((a) => a.status === "encerrado")} />

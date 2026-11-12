@@ -27,7 +27,7 @@ const LEVELS: RiskLevel[] = ["baixo", "moderado", "alto", "critico"];
  * Abre automaticamente quando a IA identifica risco crítico.
  */
 export function EmitAlertButton() {
-  const { createAlert, sensorsIn, autoAlert, dismissAutoAlert, riskFor } = useMonitoring();
+  const { createAlert, sensorsIn, autoAlert, dismissAutoAlert, riskFor, isOperator } = useMonitoring();
   const [open, setOpen] = useState(false);
   const [municipalityId, setMunicipalityId] = useState(MUNICIPALITIES[0].id);
   const [neighborhoodId, setNeighborhoodId] = useState(
@@ -45,14 +45,16 @@ export function EmitAlertButton() {
 
   // Abertura automática disparada pela IA em cenário crítico.
   useEffect(() => {
-    if (!autoAlert) return;
+    if (!autoAlert || !isOperator) return;
     setMunicipalityId(autoAlert.municipalityId);
     setNeighborhoodId(autoAlert.neighborhoodId);
     setLevel(autoAlert.level);
     setDescription(autoAlert.description);
     setOrigin("ia");
     setOpen(true);
-  }, [autoAlert]);
+  }, [autoAlert, isOperator]);
+
+  if (!isOperator) return null;
 
   const handleMunicipality = (value: string) => {
     setMunicipalityId(value);
