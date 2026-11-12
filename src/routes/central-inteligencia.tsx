@@ -89,6 +89,13 @@ function IntelligenceCenterPage() {
         cycles={cycles}
       />
 
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="flex flex-col gap-1 p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <p className="font-medium">Análise explicável baseada nas leituras disponíveis</p>
+          <p className="text-xs text-muted-foreground">{scoped.filter((sensor) => sensor.status === "online").length} de {scoped.length} sensores online · sem probabilidade preditiva validada</p>
+        </CardContent>
+      </Card>
+
       <FilterBar />
 
       <div className="grid gap-4 xl:grid-cols-3">
