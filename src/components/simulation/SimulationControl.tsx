@@ -26,7 +26,7 @@ const SPEED_IDS = Object.keys(SPEEDS) as SimulationSpeed[];
 
 /** Indicador de status + controle de simulação do Centro de Operações. */
 export function SimulationControl() {
-  const { simulation, startSimulation, stopSimulation, filters } = useMonitoring();
+  const { simulation, startSimulation, stopSimulation, filters, isOperator } = useMonitoring();
   const [open, setOpen] = useState(false);
   const [scenario, setScenario] = useState<SimulationScenario>("completa");
   const [speed, setSpeed] = useState<SimulationSpeed>("normal");
@@ -82,15 +82,15 @@ export function SimulationControl() {
           ) : null}
         </div>
 
-        {active ? (
+        {active && isOperator ? (
           <Button size="lg" variant="destructive" onClick={stopSimulation} disabled={simulation?.recovering}>
             <Square className="h-4 w-4" /> Encerrar Simulação
           </Button>
-        ) : (
+        ) : !active && isOperator ? (
           <Button size="lg" onClick={() => setOpen(true)} className="font-semibold">
             <PlayCircle className="h-5 w-5" /> Iniciar Simulação
           </Button>
-        )}
+        ) : null}
       </div>
 
       <AnimatePresence>
