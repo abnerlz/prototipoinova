@@ -21,6 +21,7 @@ import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as OcorrenciasRouteImport } from './routes/ocorrencias'
 import { Route as OperacaoRouteImport } from './routes/operacao'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
+import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as ApiSensoresRouteImport } from './routes/api/sensores'
 import { Route as BairrosIndexRouteImport } from './routes/bairros.index'
 import { Route as BairrosNeighborhoodIdRouteImport } from './routes/bairros.$neighborhoodId'
@@ -95,6 +96,11 @@ const OperacaoRoute = OperacaoRouteImport.update({
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSensoresRoute = ApiSensoresRouteImport.update({
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/ocorrencias': typeof OcorrenciasRoute
   '/operacao': typeof OperacaoRoute
   '/relatorios': typeof RelatoriosRoute
+  '/sobre': typeof SobreRoute
   '/api/sensores': typeof ApiSensoresRouteWithChildren
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/localidades/$neighborhoodId': typeof LocalidadesNeighborhoodIdRoute
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/ocorrencias': typeof OcorrenciasRoute
   '/operacao': typeof OperacaoRoute
   '/relatorios': typeof RelatoriosRoute
+  '/sobre': typeof SobreRoute
   '/api/sensores': typeof ApiSensoresRouteWithChildren
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/localidades/$neighborhoodId': typeof LocalidadesNeighborhoodIdRoute
@@ -251,6 +259,7 @@ export interface FileRoutesById {
   '/ocorrencias': typeof OcorrenciasRoute
   '/operacao': typeof OperacaoRoute
   '/relatorios': typeof RelatoriosRoute
+  '/sobre': typeof SobreRoute
   '/api/sensores': typeof ApiSensoresRouteWithChildren
   '/bairros/$neighborhoodId': typeof BairrosNeighborhoodIdRoute
   '/localidades/$neighborhoodId': typeof LocalidadesNeighborhoodIdRoute
@@ -282,6 +291,7 @@ export interface FileRouteTypes {
     | '/ocorrencias'
     | '/operacao'
     | '/relatorios'
+    | '/sobre'
     | '/api/sensores'
     | '/bairros/$neighborhoodId'
     | '/localidades/$neighborhoodId'
@@ -311,6 +321,7 @@ export interface FileRouteTypes {
     | '/ocorrencias'
     | '/operacao'
     | '/relatorios'
+    | '/sobre'
     | '/api/sensores'
     | '/bairros/$neighborhoodId'
     | '/localidades/$neighborhoodId'
@@ -340,6 +351,7 @@ export interface FileRouteTypes {
     | '/ocorrencias'
     | '/operacao'
     | '/relatorios'
+    | '/sobre'
     | '/api/sensores'
     | '/bairros/$neighborhoodId'
     | '/localidades/$neighborhoodId'
@@ -370,6 +382,7 @@ export interface RootRouteChildren {
   OcorrenciasRoute: typeof OcorrenciasRoute
   OperacaoRoute: typeof OperacaoRoute
   RelatoriosRoute: typeof RelatoriosRoute
+  SobreRoute: typeof SobreRoute
   ApiSensoresRoute: typeof ApiSensoresRouteWithChildren
   BairrosNeighborhoodIdRoute: typeof BairrosNeighborhoodIdRoute
   LocalidadesNeighborhoodIdRoute: typeof LocalidadesNeighborhoodIdRoute
@@ -467,6 +480,13 @@ declare module '@tanstack/react-router' {
       path: '/relatorios'
       fullPath: '/relatorios'
       preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/sensores': {
@@ -617,6 +637,7 @@ const rootRouteChildren: RootRouteChildren = {
   OcorrenciasRoute: OcorrenciasRoute,
   OperacaoRoute: OperacaoRoute,
   RelatoriosRoute: RelatoriosRoute,
+  SobreRoute: SobreRoute,
   ApiSensoresRoute: ApiSensoresRouteWithChildren,
   BairrosNeighborhoodIdRoute: BairrosNeighborhoodIdRoute,
   LocalidadesNeighborhoodIdRoute: LocalidadesNeighborhoodIdRoute,

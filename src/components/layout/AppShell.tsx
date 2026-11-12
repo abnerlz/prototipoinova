@@ -17,10 +17,12 @@ import {
   ShieldAlert,
   Siren,
   UserCog,
+  Info,
 } from "lucide-react";
 
 import { EmitAlertButton } from "@/components/alerts/EmitAlertButton";
 import { OperatorAccess } from "@/components/auth/OperatorAccess";
+import { HelpCenter } from "@/components/help/HelpCenter";
 import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
@@ -49,9 +51,9 @@ const NAV = [
   { title: "Histórico", url: "/historico", icon: History },
   { title: "Relatórios", url: "/relatorios", icon: FileBarChart },
   { title: "Central de Inteligência", url: "/central-inteligencia", icon: BrainCircuit },
-  { title: "Inteligência Artificial", url: "/ia", icon: BrainCircuit },
   { title: "Apoio à Decisão", url: "/apoio-decisao", icon: ShieldAlert },
   { title: "Acessibilidade", url: "/acessibilidade", icon: Accessibility },
+  { title: "Sobre nós", url: "/sobre", icon: Info },
 
 ] as const;
 
@@ -111,10 +113,10 @@ function TopBar() {
   const active = alerts.filter((a) => a.status === "ativo").length;
 
   return (
-    <header className="glass sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 px-3">
+    <header className="glass sticky top-0 z-30 flex min-h-14 items-center gap-2 border-b border-border/60 px-2.5 py-2 sm:gap-3 sm:px-3 sm:py-0">
       <SidebarTrigger className="shrink-0" />
       <div className="min-w-0">
-        <p className="font-display truncate text-sm font-semibold">
+        <p className="font-display truncate text-xs font-semibold sm:text-sm">
           Monitoramento Inteligente de Deslizamentos · RMR
         </p>
         <p className="hidden text-[11px] text-muted-foreground sm:block">
@@ -137,7 +139,7 @@ function TopBar() {
         <Badge variant="outline" className="hidden border-border/70 lg:inline-flex">
           {active} alertas ativos
         </Badge>
-        <Badge variant="outline" className="border-primary/40 text-primary">
+        <Badge variant="outline" className="max-w-[7.5rem] truncate border-primary/40 px-1.5 text-[10px] sm:max-w-none sm:px-2 sm:text-xs">
           Risco {RISK_LABEL[global.level]} · {global.score}
         </Badge>
         <OperatorAccess />
@@ -241,6 +243,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <EmitAlertButton />
+      <HelpCenter />
     </SidebarProvider>
   );
 }
