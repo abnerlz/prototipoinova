@@ -23,6 +23,7 @@ import {
 import { EmitAlertButton } from "@/components/alerts/EmitAlertButton";
 import { OperatorAccess } from "@/components/auth/OperatorAccess";
 import { HelpCenter } from "@/components/help/HelpCenter";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
@@ -124,6 +125,7 @@ function TopBar() {
         </p>
       </div>
       <div className="ml-auto flex items-center gap-2">
+        <NotificationCenter />
         <Badge variant="outline" className="hidden gap-1.5 border-border/70 md:inline-flex">
           <span
             className={cn(
