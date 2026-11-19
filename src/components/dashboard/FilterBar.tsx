@@ -14,13 +14,13 @@ export function FilterBar() {
   );
 
   return (
-    <div className="glass sticky top-2 z-20 flex flex-wrap items-center gap-2 rounded-xl p-3">
-      <span className="flex items-center gap-2 pr-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <div className="glass sticky top-2 z-20 flex flex-wrap items-center gap-2 rounded-xl p-2.5 sm:p-3">
+      <span className="flex w-full items-center gap-2 pr-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:w-auto">
         <Filter className="h-3.5 w-3.5" /> Filtros
       </span>
 
       <Select value={filters.municipalityId} onValueChange={(v) => setFilters({ municipalityId: v })}>
-        <SelectTrigger className="h-9 w-[190px] bg-secondary/40 text-sm">
+        <SelectTrigger className="h-10 w-full min-w-0 bg-secondary/40 text-sm sm:w-[190px] sm:flex-1 lg:flex-none">
           <SelectValue placeholder="Município" />
         </SelectTrigger>
         <SelectContent>
@@ -34,7 +34,7 @@ export function FilterBar() {
       </Select>
 
       <Select value={filters.neighborhoodId} onValueChange={(v) => setFilters({ neighborhoodId: v })}>
-        <SelectTrigger className="h-9 w-[190px] bg-secondary/40 text-sm">
+        <SelectTrigger className="h-10 w-full min-w-0 bg-secondary/40 text-sm sm:w-[190px] sm:flex-1 lg:flex-none">
           <SelectValue placeholder="Bairro" />
         </SelectTrigger>
         <SelectContent>
@@ -51,7 +51,7 @@ export function FilterBar() {
         value={filters.sensorType}
         onValueChange={(v) => setFilters({ sensorType: v as SensorType | "all" })}
       >
-        <SelectTrigger className="h-9 w-[190px] bg-secondary/40 text-sm">
+        <SelectTrigger className="h-10 w-full min-w-0 bg-secondary/40 text-sm sm:w-[190px] sm:flex-1 lg:flex-none">
           <SelectValue placeholder="Tipo de sensor" />
         </SelectTrigger>
         <SelectContent>
@@ -65,7 +65,7 @@ export function FilterBar() {
       </Select>
 
       <Select value={filters.period} onValueChange={(v) => setFilters({ period: v as Filters["period"] })}>
-        <SelectTrigger className="h-9 w-[170px] bg-secondary/40 text-sm">
+        <SelectTrigger className="h-10 w-full min-w-0 bg-secondary/40 text-sm sm:w-[170px] sm:flex-1 lg:flex-none">
           <SelectValue placeholder="Período" />
         </SelectTrigger>
         <SelectContent>
@@ -80,7 +80,7 @@ export function FilterBar() {
       <Button
         variant="ghost"
         size="sm"
-        className="ml-auto text-muted-foreground"
+        className="ml-auto min-h-10 text-muted-foreground"
         onClick={() =>
           setFilters({ municipalityId: "all", neighborhoodId: "all", sensorType: "all", period: "24h" })
         }
